@@ -67,19 +67,25 @@ export class AddressService {
     );
   }
 
-  // DELETE aus PostgreSQL und sofortiger UI-Update
   deleteAddress(id: string): void {
     console.log(`📤 Sende Löschauftrag für ID ${id} an das Backend...`);
 
     this.http.delete(`${this.apiUrl}/${id}`).subscribe({
       next: () => {
-        // ✅ Erst wenn der Server "Ok" sagt, entfernen wir das Element aus dem Signal
-        this.addressesSignal.update((list) => list.filter((a) => a.id !== id));
-        console.log(`✅ Eintrag ${id} erfolgreich aus DB und UI entfernt.`);
+        // ✅ Wir filtern das Array UND zwingen das Signal durch [...], eine völlig neue Referenz zu erzeugen
+        this.addressesSignal.update((currentList) => {
+          const filteredList = currentList.filter((item) => item.id !== id);
+          return [...filteredList];
+        });
+
+        console.log(
+          `✅ Frontend-State aktualisiert. Verbleibende Einträge:`,
+          this.addressesSignal().length,
+        );
       },
       error: (err: unknown) => {
         console.error('❌ Fehler beim Löschen in der Datenbank:', err);
-        alert('Der Eintrag konnte nicht gelöscht werden. Ist das Backend online?');
+        alert('Der Eintrag konnte nicht gelöscht werden.');
       },
     });
   }
