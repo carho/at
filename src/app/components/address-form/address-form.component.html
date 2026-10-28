@@ -1,0 +1,90 @@
+<div class="container mt-4" style="max-width: 600px;">
+  <h3>{{ isEditMode() ? 'Adresse bearbeiten' : 'Neue Adresse anlegen' }}</h3>
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="row g-3">
+      <!-- Vorname -->
+      <div class="col-6">
+        <label class="form-label">Vorname</label>
+        <input
+          [(ngModel)]="firstName"
+          name="firstName"
+          class="form-control"
+          [appSignalValid]="firstName().trim().length > 0"
+          errorMessage="Der Vorname ist ein Pflichtfeld."
+        >
+      </div>
+      <!-- Nachname -->
+      <div class="col-6">
+        <label class="form-label">Nachname</label>
+        <input [(ngModel)]="lastName" name="lastName" class="form-control" required>
+      </div>
+
+      <!-- E-Mail mit berechneter Validierungs-Visualisierung -->
+      <div class="col-12">
+        <label class="form-label">E-Mail</label>
+        <input
+          [(ngModel)]="email"
+          name="email"
+          type="email"
+          class="form-control"
+          [appSignalValid]="email().length === 0 || isEmailValid()"
+          errorMessage="Bitte gib eine gültige E-Mail-Adresse ein."
+        >
+      </div>
+      <!-- Telefon -->
+      <div class="col-12">
+        <label class="form-label">Telefon</label>
+        <input [(ngModel)]="phone" name="phone" class="form-control" required>
+      </div>
+
+      <!-- Straße -->
+      <div class="col-12">
+        <label class="form-label">Straße & Hausnummer</label>
+        <input [(ngModel)]="street" name="street" class="form-control" required>
+      </div>
+
+      <!-- Stadt -->
+      <div class="col-6">
+        <label class="form-label">Stadt</label>
+        <input [(ngModel)]="city" name="city" class="form-control" required>
+      </div>
+
+      <!-- PLZ -->
+      <div class="col-6">
+        <label class="form-label">PLZ</label>
+        <input [(ngModel)]="zipCode" name="zipCode" class="form-control" required>
+      </div>
+
+      <!-- Bundesland -->
+      <div class="col-6">
+        <label class="form-label">Bundesland</label>
+        <input [(ngModel)]="state" name="state" class="form-control">
+      </div>
+
+      <!-- Land -->
+      <div class="col-6">
+        <label class="form-label">Land</label>
+        <input [(ngModel)]="country" name="country" class="form-control" required>
+      </div>
+
+      <!-- Kategorie -->
+      <div class="col-12">
+        <label class="form-label">Kategorie</label>
+        <select [(ngModel)]="category" name="category" class="form-select">
+          <option value="Personal">Privat</option>
+          <option value="Work">Geschäftlich</option>
+          <option value="Other">Sonstige</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Aktions-Buttons -->
+    <div class="mt-4 gap-2 d-flex">
+      <button type="submit" class="btn btn-success" [disabled]="!isFormValid()">
+        Eintrag speichern
+      </button>
+      <a routerLink="/" class="btn btn-secondary">Abbrechen</a>
+    </div>
+  </form>
+</div>
