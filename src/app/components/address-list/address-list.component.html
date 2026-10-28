@@ -7,30 +7,57 @@
   <div class="table-responsive shadow-sm rounded">
     <table class="table table-striped table-hover align-middle mb-0">
       <thead class="table-dark">
+      <!-- Zeile 1: Spalten-Sortierung -->
       <tr>
-        <!-- Klickbare Header für serverbasiertes Sortieren -->
-        <th (click)="addressService.changeSort('lastName')" style="cursor: pointer; user-select: none;">
+        <th (click)="addressService.changeSort('lastName')" style="cursor: pointer; user-select: none; width: 25%;">
           Name
           @if (addressService.sortField() === 'lastName') {
             {{ addressService.sortOrder() === 'asc' ? '▲' : '▼' }}
           }
         </th>
-        <th>Email</th>
-        <th (click)="addressService.changeSort('city')" style="cursor: pointer; user-select: none;">
+        <th style="width: 25%;">Email</th>
+        <th (click)="addressService.changeSort('city')" style="cursor: pointer; user-select: none; width: 20%;">
           Stadt
           @if (addressService.sortField() === 'city') {
             {{ addressService.sortOrder() === 'asc' ? '▲' : '▼' }}
           }
         </th>
-        <th (click)="addressService.changeSort('category')" style="cursor: pointer; user-select: none;">
+        <th (click)="addressService.changeSort('category')" style="cursor: pointer; user-select: none; width: 15%;">
           Kategorie
           @if (addressService.sortField() === 'category') {
             {{ addressService.sortOrder() === 'asc' ? '▲' : '▼' }}
           }
         </th>
-        <th>Aktionen</th>
+        <th style="width: 15%;">Aktionen</th>
+      </tr>
+
+      <!-- 🔍 Zeile 2: Spalten-Echtzeitfilter -->
+      <tr class="bg-secondary bg-opacity-10">
+        <th>
+          <input type="text" class="form-control form-control-sm" placeholder="Nachname filtern..."
+                 [value]="addressService.columnFilters().lastName"
+                 (input)="addressService.updateColumnFilter('lastName', $any($event.target).value)">
+        </th>
+        <th><!-- Email wird nicht gefiltert --></th>
+        <th>
+          <input type="text" class="form-control form-control-sm" placeholder="Stadt filtern..."
+                 [value]="addressService.columnFilters().city"
+                 (input)="addressService.updateColumnFilter('city', $any($event.target).value)">
+        </th>
+        <th>
+          <select class="form-select form-select-sm"
+                  [value]="addressService.columnFilters().category"
+                  (change)="addressService.updateColumnFilter('category', $any($event.target).value)">
+            <option value="">Alle</option>
+            <option value="Personal">Privat</option>
+            <option value="Work">Geschäftlich</option>
+            <option value="Other">Sonstige</option>
+          </select>
+        </th>
+        <th></th>
       </tr>
       </thead>
+
       <tbody>
         @for (addr of addressService.addressesSignal(); track addr.id) {
           <tr>
@@ -44,38 +71,25 @@
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="5" class="text-center text-muted py-4">Keine Adressbucheinträge auf dieser Seite gefunden.</td></tr>
+          <tr><td colspan="5" class="text-center text-muted py-4">Keine Adressbucheinträge für diese Filterkombination gefunden.</td></tr>
         }
       </tbody>
     </table>
   </div>
 
-  <!-- Pagination Steuerung -->
+  <!-- Pagination-Footer (Bleibt identisch wie vorher) -->
   <div class="d-flex justify-content-between align-items-center mt-3">
     <span class="text-muted small">
-      Zeige Einträge auf Seite {{ addressService.currentPage() }} von {{ addressService.totalPages() }}
-      (Gesamt: {{ addressService.totalItems() }})
+      Seite {{ addressService.currentPage() }} von {{ addressService.totalPages() }} (Gesamt: {{ addressService.totalItems() }})
     </span>
-
     <nav>
       <ul class="pagination pagination-sm mb-0">
-        <!-- Zurück-Button -->
         <li class="page-item" [class.disabled]="addressService.currentPage() === 1">
-          <button type="button" class="page-link" (click)="addressService.currentPage.update(p => p - 1)">
-            Zurück
-          </button>
+          <button type="button" class="page-link" (click)="addressService.currentPage.update(p => p - 1)">Zurück</button>
         </li>
-
-        <!-- Aktuelle Seite (Indikator) -->
-        <li class="page-item active">
-          <span class="page-link">{{ addressService.currentPage() }}</span>
-        </li>
-
-        <!-- Vor-Button -->
+        <li class="page-item active"><span class="page-link">{{ addressService.currentPage() }}</span></li>
         <li class="page-item" [class.disabled]="addressService.currentPage() === addressService.totalPages() || addressService.totalPages() === 0">
-          <button type="button" class="page-link" (click)="addressService.currentPage.update(p => p + 1)">
-            Vor
-          </button>
+          <button type="button" class="page-link" (click)="addressService.currentPage.update(p => p + 1)">Vor</button>
         </li>
       </ul>
     </nav>

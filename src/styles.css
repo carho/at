@@ -1,3 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
+css
+thead tr.bg-secondary input,
+thead tr.bg-secondary select {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ced4da;
+}
+thead tr.bg-secondary input:focus,
+thead tr.bg-secondary select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  background-color: #fff;
+}
 
 /* Hier können deine bisherigen globalen Styles stehen bleiben */

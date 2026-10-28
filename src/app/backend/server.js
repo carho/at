@@ -31,62 +31,85 @@ pool.connect((err, client, release) => {
 // GET: Alle Adressen laden
 // GET: Alle Adressen abrufen mit Pagination & Sorting
 app.get('/api/addresses', async (req, res) => {
-  console.log('📥 GET /api/addresses mit Pagination aufgerufen. Parameter:', req.query);
-
   try {
-    // 1. Parameter auslesen und Defaults setzen
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 5; // Standardmäßig 5 Einträge pro Seite
+    const limit = parseInt(req.query.limit, 10) || 5;
     const offset = (page - 1) * limit;
 
-    // Sortierungs-Erlaubnisliste (Whitelisting gegen SQL-Injection)
     const allowedSortFields = {
       firstName: 'first_name',
       lastName: 'last_name',
       city: 'city',
-      category: 'category'
+      category: 'category',
     };
-    const sortKey = req.query.sort || 'lastName';
-    const sortColumn = allowedSortFields[sortKey] || 'last_name';
-
+    const sortColumn = allowedSortFields[req.query.sort] || 'last_name';
     const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
 
-    // 2. Gesamtanzahl der Zeilen ermitteln (Wichtig für Pagination-Buttons)
-    const countResult = await pool.query('SELECT COUNT(*) FROM addresses');
-    const totalItems = parseInt(countResult.rows[0].count, 10);
+    // 1. Dynamischen WHERE-Filter-Array aufbauen
+    let whereClauses = [];
+    let queryValues = [];
+    let paramIndex = 1;
 
-    // 3. Paginierte und sortierte Daten aus der DB abfragen
-    const queryText = `
+    const filterMappings = {
+      filterFirstName: 'first_name',
+      filterLastName: 'last_name',
+      filterCity: 'city',
+      filterCategory: 'category',
+    };
+
+    // Schleife prüft, welche Filter vom Frontend geschickt wurden
+    for (const [queryParam, dbColumn] of Object.entries(filterMappings)) {
+      const val = req.query[queryParam];
+      if (val && val.trim() !== '') {
+        if (queryParam === 'filterCategory') {
+          // Kategorie exakt filtern
+          whereClauses.push(`${dbColumn} = $${paramIndex}`);
+          queryValues.push(val.trim());
+        } else {
+          // Strings per Wildcard ILIKE (case-insensitive) filtern
+          whereClauses.push(`${dbColumn} ILIKE $${paramIndex}`);
+          queryValues.push(`%${val.trim()}%`);
+        }
+        paramIndex++;
+      }
+    }
+
+    // Wenn keine Filter aktiv sind, greift ein Standard-True (1=1)
+    const whereString =
+      whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : 'WHERE 1=1';
+
+    // 2. Gesamtanzahl passend zur dynamischen Filterung zählen
+    const countQuery = `SELECT COUNT(*) FROM addresses ${whereString}`;
+    const countResult = await pool.query(countQuery, queryValues);
+    const totalItems = parseInt(countResult.rows[0].count, 10);
+    // Debug-Log im Server-Terminal, um zu sehen, ob jetzt eine echte Zahl berechnet wird:
+    console.log(`📊 DB-Count berechnet: ${totalItems} Einträge gesamt.`);
+
+    // 3. Daten abfragen (LIMIT und OFFSET benötigen eigene Parameter am Ende des Werte-Arrays)
+    const dataQuery = `
       SELECT
-        id,
-        first_name AS "firstName",
-        last_name AS "lastName",
-        email,
-        phone,
-        street,
-        city,
-        state,
-        zip_code AS "zipCode",
-        country,
-        category
+        id, first_name AS "firstName", last_name AS "lastName",
+        email, phone, street, city, state, zip_code AS "zipCode",
+        country, category
       FROM addresses
+      ${whereString}
       ORDER BY ${sortColumn} ${order}
-      LIMIT $1 OFFSET $2
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
-    const result = await pool.query(queryText, [limit, offset]);
+    // Ergänze LIMIT und OFFSET im Parameter-Array für die DB
+    const finalValues = [...queryValues, limit, offset];
+    const result = await pool.query(dataQuery, finalValues);
 
-    // 4. Strukturierte Antwort zurückgeben
     return res.json({
       data: result.rows,
       total: totalItems,
       page: page,
       limit: limit,
-      totalPages: Math.ceil(totalItems / limit)
+      totalPages: Math.ceil(totalItems / limit),
     });
-
   } catch (err) {
-    console.error('❌ Fehler in GET /api/addresses:', err.message);
+    console.error('❌ Fehler in GET /api/addresses mit Spaltenfilter:', err.message);
     return res.status(500).json({ error: err.message });
   }
 });
