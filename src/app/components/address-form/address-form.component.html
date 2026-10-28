@@ -44,10 +44,19 @@
         <input [(ngModel)]="street" name="street" class="form-control" required>
       </div>
 
+
       <!-- Stadt -->
       <div class="col-6">
-        <label class="form-label">Stadt</label>
-        <input [(ngModel)]="city" name="city" class="form-control" required>
+        <label class="form-label">Stadt *</label>
+        <input
+          [(ngModel)]="city"
+          name="city"
+          class="form-control"
+          [class.is-invalid]="formSubmitted() && city().trim().length === 0"
+          required
+        >
+        <!-- Die Fehlermeldung wird von Bootstrap eingeblendet, wenn die Input-Klasse 'is-invalid' aktiv ist -->
+        <div class="invalid-feedback">Die Stadt ist ein Pflichtfeld.</div>
       </div>
 
       <!-- PLZ -->
@@ -81,7 +90,7 @@
 
     <!-- Aktions-Buttons -->
     <div class="mt-4 gap-2 d-flex">
-      <button type="submit" class="btn btn-success" [disabled]="!isFormValid()">
+      <button type="submit" class="btn btn-success">
         Eintrag speichern
       </button>
       <a routerLink="/" class="btn btn-secondary">Abbrechen</a>

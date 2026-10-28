@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AddressService } from '../../services/address.service';
 import { NewAddress } from '../../models/address.model';
 import { SignalValidatorDirective } from '../../directives/signal-validator.directive';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-address-form',
@@ -17,6 +18,7 @@ export class AddressFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
+  formSubmitted = signal(false);
   // Status-Signale für den Modus
   isEditMode = signal(false);
   id = signal<string | null>(null);
@@ -76,7 +78,13 @@ export class AddressFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.isFormValid()) return;
+    this.formSubmitted.set(true);
+
+    if (!this.isFormValid()) {
+      // 🚨 WICHTIG: Dem User sofort sagen, dass etwas fehlt!
+      alert('Bitte fülle alle Pflichtfelder aus (Stadt und PLZ dürfen nicht leer sein)!');
+      return;
+    }
 
     const addressData: NewAddress = {
       firstName: this.firstName(),
@@ -95,7 +103,25 @@ export class AddressFormComponent implements OnInit {
     if (this.isEditMode() && currentId) {
       this.addressService.updateAddress({ id: currentId, ...addressData });
     } else {
-      this.addressService.addAddress(addressData);
+      this.addressService.addAddress(addressData).subscribe({
+        next: () => {
+          // Erfolgreich gespeichert -> zurück zur Liste
+          this.router.navigate(['/']);
+        },
+        error: (err: unknown) => {
+          // Sichere Typüberprüfung (Type Guard)
+          if (err instanceof HttpErrorResponse) {
+            if (err.status === 409) {
+              // Da err.error ein beliebiges Objekt sein kann, casten wir es kurz auf 'any' für den Zugriff
+              alert((err.error as any).message || 'Eintrag existiert bereits.');
+            } else {
+              alert('Ein unerwarteter Serverfehler ist aufgetreten.');
+            }
+          } else {
+            alert('Ein unbekannter Fehler ist aufgetreten.');
+          }
+        },
+      });
     }
 
     this.router.navigate(['/']);

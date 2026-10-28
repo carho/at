@@ -1,25 +1,15 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Address, NewAddress } from '../models/address.model';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AddressService {
-  private addressesSignal = signal<Address[]>([
-    {
-      id: '1',
-      firstName: 'Max',
-      lastName: 'Mustermann',
-      email: 'max@example.com',
-      phone: '+49 123 456789',
-      street: 'Main Street 1',
-      city: 'Berlin',
-      state: 'Berlin',
-      zipCode: '10115',
-      country: 'Germany',
-      category: 'Work',
-    },
-  ]);
-
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:3000/api/addresses';
+  // 1. Dieses Signal FEHLT vermutlich bei dir – füge es wieder ein:
   searchQuery = signal<string>('');
+  private addressesSignal = signal<Address[]>([]);
   addresses = computed(() => this.addressesSignal());
 
   filteredAddresses = computed(() => {
@@ -34,16 +24,64 @@ export class AddressService {
     );
   });
 
-  addAddress(newAddress: NewAddress): void {
-    this.addressesSignal.update((list) => [...list, { ...newAddress, id: crypto.randomUUID() }]);
+  constructor() {
+    this.loadAddresses();
   }
 
-  updateAddress(updated: Address): void {
-    this.addressesSignal.update((list) => list.map((a) => (a.id === updated.id ? updated : a)));
+  // GET von PostgreSQL
+  loadAddresses(): void {
+    this.http.get<Address[]>(this.apiUrl).subscribe({
+      next: (data) => this.addressesSignal.set(data),
+      error: (err) => console.error('Fehler beim Laden der DB-Einträge:', err),
+    });
   }
 
+  // 1. MUSS ein Observable zurückgeben (beachte das 'return'!)
+  addAddress(newAddress: NewAddress): Observable<{ id: string }> {
+    return this.http.post<{ id: string }>(this.apiUrl, newAddress).pipe(
+      tap({
+        next: (response) => {
+          const addedItem: Address = { ...newAddress, id: response.id };
+          this.addressesSignal.update((list) => [...list, addedItem]);
+        },
+        error: (err: any) => {
+          console.error('❌ Fehler beim Hinzufügen im Service:', err);
+        },
+      }),
+    );
+  }
+
+  // 2. MUSS ein Observable zurückgeben (beachte das 'return'!)
+  updateAddress(updated: Address): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${updated.id}`, updated).pipe(
+      tap({
+        next: () => {
+          this.addressesSignal.update((list) =>
+            list.map((a) => (a.id === updated.id ? updated : a)),
+          );
+        },
+        error: (err: any) => {
+          console.error('❌ Fehler beim Update im Service:', err);
+        },
+      }),
+    );
+  }
+
+  // DELETE aus PostgreSQL und sofortiger UI-Update
   deleteAddress(id: string): void {
-    this.addressesSignal.update((list) => list.filter((a) => a.id !== id));
+    console.log(`📤 Sende Löschauftrag für ID ${id} an das Backend...`);
+
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+      next: () => {
+        // ✅ Erst wenn der Server "Ok" sagt, entfernen wir das Element aus dem Signal
+        this.addressesSignal.update((list) => list.filter((a) => a.id !== id));
+        console.log(`✅ Eintrag ${id} erfolgreich aus DB und UI entfernt.`);
+      },
+      error: (err: unknown) => {
+        console.error('❌ Fehler beim Löschen in der Datenbank:', err);
+        alert('Der Eintrag konnte nicht gelöscht werden. Ist das Backend online?');
+      },
+    });
   }
 
   getAddressById(id: string): Address | undefined {
