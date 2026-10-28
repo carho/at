@@ -29,16 +29,68 @@ pool.connect((err, client, release) => {
   release();
 });
 // GET: Alle Adressen laden
+// GET: Alle Adressen abrufen mit Pagination & Sorting
 app.get('/api/addresses', async (req, res) => {
+  console.log('📥 GET /api/addresses mit Pagination aufgerufen. Parameter:', req.query);
+
   try {
-    const result = await pool.query(
-      'SELECT id, first_name AS "firstName", last_name AS "lastName", email, phone, street, city, state, zip_code AS "zipCode", country, category FROM addresses',
-    );
-    res.json(result.rows);
+    // 1. Parameter auslesen und Defaults setzen
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 5; // Standardmäßig 5 Einträge pro Seite
+    const offset = (page - 1) * limit;
+
+    // Sortierungs-Erlaubnisliste (Whitelisting gegen SQL-Injection)
+    const allowedSortFields = {
+      firstName: 'first_name',
+      lastName: 'last_name',
+      city: 'city',
+      category: 'category'
+    };
+    const sortKey = req.query.sort || 'lastName';
+    const sortColumn = allowedSortFields[sortKey] || 'last_name';
+
+    const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
+
+    // 2. Gesamtanzahl der Zeilen ermitteln (Wichtig für Pagination-Buttons)
+    const countResult = await pool.query('SELECT COUNT(*) FROM addresses');
+    const totalItems = parseInt(countResult.rows[0].count, 10);
+
+    // 3. Paginierte und sortierte Daten aus der DB abfragen
+    const queryText = `
+      SELECT
+        id,
+        first_name AS "firstName",
+        last_name AS "lastName",
+        email,
+        phone,
+        street,
+        city,
+        state,
+        zip_code AS "zipCode",
+        country,
+        category
+      FROM addresses
+      ORDER BY ${sortColumn} ${order}
+      LIMIT $1 OFFSET $2
+    `;
+
+    const result = await pool.query(queryText, [limit, offset]);
+
+    // 4. Strukturierte Antwort zurückgeben
+    return res.json({
+      data: result.rows,
+      total: totalItems,
+      page: page,
+      limit: limit,
+      totalPages: Math.ceil(totalItems / limit)
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('❌ Fehler in GET /api/addresses:', err.message);
+    return res.status(500).json({ error: err.message });
   }
 });
+
 
 // POST: Neue Adresse hinzufügen
 app.post('/api/addresses', async (req, res) => {
@@ -78,15 +130,44 @@ app.put('/api/addresses/:id', async (req, res) => {
   }
 });
 
-// DELETE: Adresse löschen
+// DELETE: Adresse löschen (Fehlersicher mit explizitem Funktionsabbruch)
 app.delete('/api/addresses/:id', async (req, res) => {
   const { id } = req.params;
+  console.log(`📥 Backend: DELETE-Anfrage für ID: ${id}`);
+
+  if (!id || id === 'undefined') {
+    console.error('❌ Fehler: Keine gültige ID übergeben!');
+    return res.status(400).json({ error: 'Ungültige oder fehlende ID' });
+  }
+
   try {
-    await pool.query('DELETE FROM addresses WHERE id = $1', [req.params.id]);
-    res.sendStatus(200);
+    const queryText = 'DELETE FROM addresses WHERE id = $1::uuid';
+    const result = await pool.query(queryText, [id]);
+
+    if (result.rowCount === 0) {
+      console.log(`⚠️ Keine Adresse mit der ID ${id} in der Datenbank gefunden.`);
+      // Wichtig: return verwenden, damit die Funktion HIER stoppt!
+      return res.status(404).json({ error: 'Eintrag nicht gefunden' });
+    }
+
+    console.log(`✅ Eintrag ${id} erfolgreich aus PostgreSQL gelöscht.`);
+
+    // Wichtig: return verwenden, damit danach kein Code (z.B. im catch) ausgeführt wird!
+    // Wir senden leeres JSON, das versteht der Angular HttpClient perfekt.
+    return res.status(200).json({});
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Da oben überall 'return' steht, landen wir HIER nur, wenn pool.query wirklich abstürzt.
+    console.error(`❌ ECHTER DB-FEHLER in DELETE /api/addresses/${id}:`, err.message);
+
+    // Falls vor dem Absturz wider Erwarten doch schon Header gesendet wurden, bricht Express nicht mehr ab:
+    if (res.headersSent) {
+      return;
+    }
+
+    return res.status(500).json({ error: err.message });
   }
 });
+
 
 app.listen(3000, () => console.log('Backend läuft auf http://localhost:3000'));

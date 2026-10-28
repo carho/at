@@ -1,96 +1,90 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Address, NewAddress } from '../models/address.model';
+import { Address, NewAddress, AddressResponse } from '../models/address.model';
 import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AddressService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000/api/addresses';
-  // 1. Dieses Signal FEHLT vermutlich bei dir – füge es wieder ein:
   searchQuery = signal<string>('');
-  private addressesSignal = signal<Address[]>([]);
-  addresses = computed(() => this.addressesSignal());
+  // State Signals für Pagination & Sorting
+  currentPage = signal<number>(1);
+  pageSize = signal<number>(5);
+  sortField = signal<string>('lastName');
+  sortOrder = signal<'asc' | 'desc'>('asc');
 
-  filteredAddresses = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.addressesSignal();
-
-    return this.addressesSignal().filter(
-      (addr) =>
-        addr.firstName.toLowerCase().includes(query) ||
-        addr.lastName.toLowerCase().includes(query) ||
-        addr.city.toLowerCase().includes(query),
-    );
-  });
+  // Daten- und Metadaten-Signals
+  addressesSignal = signal<Address[]>([]);
+  totalItems = signal<number>(0);
+  totalPages = signal<number>(0);
 
   constructor() {
-    this.loadAddresses();
-  }
-
-  // GET von PostgreSQL
-  loadAddresses(): void {
-    this.http.get<Address[]>(this.apiUrl).subscribe({
-      next: (data) => this.addressesSignal.set(data),
-      error: (err) => console.error('Fehler beim Laden der DB-Einträge:', err),
+    // Ein Effect triggert das Nachladen von der DB vollautomatisch,
+    // sobald sich eines der Steuersignale (Page, Size, Sort, Order) ändert!
+    effect(() => {
+      this.loadAddresses();
     });
   }
 
-  // 1. MUSS ein Observable zurückgeben (beachte das 'return'!)
-  addAddress(newAddress: NewAddress): Observable<{ id: string }> {
-    return this.http.post<{ id: string }>(this.apiUrl, newAddress).pipe(
-      tap({
-        next: (response) => {
-          const addedItem: Address = { ...newAddress, id: response.id };
-          this.addressesSignal.update((list) => [...list, addedItem]);
-        },
-        error: (err: any) => {
-          console.error('❌ Fehler beim Hinzufügen im Service:', err);
-        },
-      }),
-    );
+  loadAddresses(): void {
+    const params = {
+      page: this.currentPage().toString(),
+      limit: this.pageSize().toString(),
+      sort: this.sortField(),
+      order: this.sortOrder(),
+    };
+
+    this.http.get<AddressResponse>(this.apiUrl, { params }).subscribe({
+      next: (response) => {
+        this.addressesSignal.set(response.data);
+        this.totalItems.set(response.total);
+        this.totalPages.set(response.totalPages);
+      },
+      error: (err) => console.error('Fehler beim Laden der paginierten Daten:', err),
+    });
   }
 
-  // 2. MUSS ein Observable zurückgeben (beachte das 'return'!)
+  // Hilfsmethode fürs Umschalten der Sortierung
+  changeSort(field: string): void {
+    if (this.sortField() === field) {
+      // Wenn das Feld schon aktiv ist, Richtung umkehren
+      this.sortOrder.update((order) => (order === 'asc' ? 'desc' : 'asc'));
+    } else {
+      // Neues Feld aktivieren, Richtung auf Standard 'asc'
+      this.sortField.set(field);
+      this.sortOrder.set('asc');
+    }
+    this.currentPage.set(1); // Bei Sortierung zurück auf Seite 1 springen
+  }
+
+  // CRUD-Operationen rufen nach Erfolg einfach loadAddresses() auf, um die aktuelle Seite frisch zu laden
+  addAddress(newAddress: NewAddress): Observable<{ id: string }> {
+    return this.http
+      .post<{ id: string }>(this.apiUrl, newAddress)
+      .pipe(tap(() => this.loadAddresses()));
+  }
+
   updateAddress(updated: Address): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${updated.id}`, updated).pipe(
-      tap({
-        next: () => {
-          this.addressesSignal.update((list) =>
-            list.map((a) => (a.id === updated.id ? updated : a)),
-          );
-        },
-        error: (err: any) => {
-          console.error('❌ Fehler beim Update im Service:', err);
-        },
-      }),
-    );
+    return this.http
+      .put<void>(`${this.apiUrl}/${updated.id}`, updated)
+      .pipe(tap(() => this.loadAddresses()));
   }
 
   deleteAddress(id: string): void {
-    console.log(`📤 Sende Löschauftrag für ID ${id} an das Backend...`);
-
     this.http.delete(`${this.apiUrl}/${id}`).subscribe({
       next: () => {
-        // ✅ Wir filtern das Array UND zwingen das Signal durch [...], eine völlig neue Referenz zu erzeugen
-        this.addressesSignal.update((currentList) => {
-          const filteredList = currentList.filter((item) => item.id !== id);
-          return [...filteredList];
-        });
-
-        console.log(
-          `✅ Frontend-State aktualisiert. Verbleibende Einträge:`,
-          this.addressesSignal().length,
-        );
+        // Falls auf der aktuellen Seite der letzte Eintrag gelöscht wurde, eine Seite zurückspringen
+        if (this.addressesSignal().length === 1 && this.currentPage() > 1) {
+          this.currentPage.update((p) => p - 1);
+        } else {
+          this.loadAddresses();
+        }
       },
-      error: (err: unknown) => {
-        console.error('❌ Fehler beim Löschen in der Datenbank:', err);
-        alert('Der Eintrag konnte nicht gelöscht werden.');
-      },
+      error: (err) => console.error('Fehler beim Löschen:', err),
     });
   }
-
   getAddressById(id: string): Address | undefined {
-    return this.addressesSignal().find((a) => a.id === id);
+    return this.addressesSignal().find((addr) => addr.id === id);
   }
 }

@@ -11,5 +11,12 @@ export interface Address {
   country: string;
   category: 'Personal' | 'Work' | 'Other';
 }
+export interface AddressResponse {
+  data: Address[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 export type NewAddress = Omit<Address, 'id'>;
