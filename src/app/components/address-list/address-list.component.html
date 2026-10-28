@@ -19,8 +19,10 @@
           <td><span class="badge bg-secondary">{{ addr.category }}</span></td>
           <td>
             <a [routerLink]="['/edit', addr.id]" class="btn btn-sm btn-warning me-2">Edit</a>
-            <button (click)="addressService.deleteAddress(addr.id)" class="btn btn-sm btn-danger">Delete</button>
-          </td>
+            <!-- NACHHER (Korrekt): -->
+            <button type="button" (click)="addressService.deleteAddress(addr.id)" class="btn btn-sm btn-danger">
+              Löschen
+            </button>          </td>
         </tr>
       } @empty {
         <tr><td colspan="5" class="text-center text-muted">No entries match your structural query.</td></tr>
