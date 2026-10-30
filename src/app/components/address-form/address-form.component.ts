@@ -76,12 +76,12 @@ export class AddressFormComponent implements OnInit {
       }
     }
   }
+  // ... (Imports bleiben identisch)
 
   onSubmit(): void {
     this.formSubmitted.set(true);
 
     if (!this.isFormValid()) {
-      // 🚨 WICHTIG: Dem User sofort sagen, dass etwas fehlt!
       alert('Bitte fülle alle Pflichtfelder aus (Stadt und PLZ dürfen nicht leer sein)!');
       return;
     }
@@ -100,30 +100,30 @@ export class AddressFormComponent implements OnInit {
     };
 
     const currentId = this.id();
+
     if (this.isEditMode() && currentId) {
-      this.addressService.updateAddress({ id: currentId, ...addressData });
+      // FIX: .subscribe() hinzugefügt, da die Methode ein Observable zurückgibt!
+      this.addressService.updateAddress({ id: currentId, ...addressData }).subscribe({
+        next: () => this.router.navigate(['/']),
+        error: (err) => this.handleError(err),
+      });
     } else {
       this.addressService.addAddress(addressData).subscribe({
-        next: () => {
-          // Erfolgreich gespeichert -> zurück zur Liste
-          this.router.navigate(['/']);
-        },
-        error: (err: unknown) => {
-          // Sichere Typüberprüfung (Type Guard)
-          if (err instanceof HttpErrorResponse) {
-            if (err.status === 409) {
-              // Da err.error ein beliebiges Objekt sein kann, casten wir es kurz auf 'any' für den Zugriff
-              alert((err.error as any).message || 'Eintrag existiert bereits.');
-            } else {
-              alert('Ein unerwarteter Serverfehler ist aufgetreten.');
-            }
-          } else {
-            alert('Ein unbekannter Fehler ist aufgetreten.');
-          }
-        },
+        next: () => this.router.navigate(['/']),
+        error: (err) => this.handleError(err),
       });
     }
+  }
 
-    this.router.navigate(['/']);
+  private handleError(err: unknown): void {
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 409) {
+        alert((err.error as any).message || 'Eintrag existiert bereits.');
+      } else {
+        alert('Ein unerwarteter Serverfehler ist aufgetreten.');
+      }
+    } else {
+      alert('Ein unbekannter Fehler ist aufgetreten.');
+    }
   }
 }

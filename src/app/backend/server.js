@@ -121,7 +121,7 @@ app.post('/api/addresses', async (req, res) => {
     req.body;
 
   // DEBUG-LOG: Schauen, ob überhaupt Daten ankommen!
-  console.log('Empfangene Daten im Backend:', req.body);
+  console.log('Empfangene Daten im Backend PODT:', req.body);
 
   try {
     const result = await pool.query(
@@ -142,12 +142,13 @@ app.put('/api/addresses/:id', async (req, res) => {
   const { id } = req.params;
   const { firstName, lastName, email, phone, street, city, state, zipCode, country, category } =
     req.body;
+  console.log('Empfangene Daten im BackendPUT:', req.body);
   try {
     await pool.query(
       `UPDATE addresses SET first_name=$1, last_name=$2, email=$3, phone=$4, street=$5, city=$6, state=$7, zip_code=$8, country=$9, category=$10 WHERE id=$11`,
       [firstName, lastName, email, phone, street, city, state, zipCode, country, category, id],
     );
-    res.sendStatus(200);
+    res.status(200).json({});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
