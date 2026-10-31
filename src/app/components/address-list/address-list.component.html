@@ -34,10 +34,15 @@
       <!-- 🔍 Zeile 2: Spalten-Echtzeitfilter -->
       <tr class="bg-secondary bg-opacity-10">
         <th>
-          <input type="text" class="form-control form-control-sm" placeholder="Nachname filtern..."
-                 [value]="addressService.columnFilters().lastName"
-                 (input)="addressService.updateColumnFilter('lastName', $any($event.target).value)">
-        </th>
+          <div class="d-flex gap-1">
+            <input type="text" class="form-control form-control-sm" placeholder="Vorname..."
+                   [value]="addressService.columnFilters().firstName"
+                   (input)="addressService.updateColumnFilter('firstName', $any($event.target).value)">
+
+            <input type="text" class="form-control form-control-sm" placeholder="Nachname..."
+                   [value]="addressService.columnFilters().lastName"
+                   (input)="addressService.updateColumnFilter('lastName', $any($event.target).value)">
+          </div>        </th>
         <th><!-- Email wird nicht gefiltert --></th>
         <th>
           <input type="text" class="form-control form-control-sm" placeholder="Stadt filtern..."
