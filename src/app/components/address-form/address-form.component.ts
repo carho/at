@@ -9,7 +9,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   selector: 'app-address-form',
   standalone: true,
-  // Hier die Direktive importieren:
   imports: [FormsModule, RouterLink, SignalValidatorDirective],
   templateUrl: './address-form.component.html',
 })
@@ -19,7 +18,6 @@ export class AddressFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   formSubmitted = signal(false);
-  // Status-Signale für den Modus
   isEditMode = signal(false);
   id = signal<string | null>(null);
 
@@ -35,7 +33,11 @@ export class AddressFormComponent implements OnInit {
   country = signal('');
   category = signal<'Personal' | 'Work' | 'Other'>('Personal');
 
-  // Validierung via Computed Signals (Ersatz für Angular Validators)
+  // NEU: Hilfs-Signals für die flexible Geburtstagseingabe
+  birthdayDate = signal('');
+  hideYear = signal(false);
+
+  // Validierung via Computed Signals
   isEmailValid = computed(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(this.email());
@@ -53,7 +55,6 @@ export class AddressFormComponent implements OnInit {
       this.country().trim().length > 0
     );
   });
-
   ngOnInit(): void {
     const paramId = this.route.snapshot.paramMap.get('id');
     if (paramId) {
@@ -62,7 +63,6 @@ export class AddressFormComponent implements OnInit {
 
       const data = this.addressService.getAddressById(paramId);
       if (data) {
-        // Formular-Signale mit bestehenden Daten befüllen
         this.firstName.set(data.firstName);
         this.lastName.set(data.lastName);
         this.email.set(data.email);
@@ -73,17 +73,46 @@ export class AddressFormComponent implements OnInit {
         this.zipCode.set(data.zipCode);
         this.country.set(data.country);
         this.category.set(data.category);
+
+        // 🔄 FIX BEIM LADEN:
+        if (data.birthday) {
+          if (data.birthday.startsWith('--')) {
+            this.hideYear.set(true);
+            // Setzt das Feld auf '2000-10-02', damit der HTML5-Picker es visuell anzeigen kann
+            this.birthdayDate.set(`2000-${data.birthday.substring(2)}`);
+          } else {
+            this.hideYear.set(false);
+            this.birthdayDate.set(data.birthday);
+          }
+        }
       }
     }
   }
-  // ... (Imports bleiben identisch)
 
   onSubmit(): void {
     this.formSubmitted.set(true);
 
     if (!this.isFormValid()) {
-      alert('Bitte fülle alle Pflichtfelder aus (Stadt und PLZ dürfen nicht leer sein)!');
+      alert('Bitte fülle alle Pflichtfelder aus!');
       return;
+    }
+
+    // 🔄 FIX BEIM SPEICHERN:
+    let formattedBirthday: string | null = null;
+
+    if (this.birthdayDate()) {
+      const dateObj = new Date(this.birthdayDate());
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+
+      if (this.hideYear()) {
+        // Wenn das Jahr verborgen werden soll, erzwingen wir das Präfix '--' (z.B. --10-02)
+        formattedBirthday = `--${month}-${day}`;
+      } else {
+        // Ansonsten speichern wir das echte, vom User gewählte Jahr
+        const year = dateObj.getFullYear();
+        formattedBirthday = `${year}-${month}-${day}`;
+      }
     }
 
     const addressData: NewAddress = {
@@ -97,12 +126,12 @@ export class AddressFormComponent implements OnInit {
       zipCode: this.zipCode(),
       country: this.country(),
       category: this.category(),
+      birthday: formattedBirthday, // Korrigierter String wird übermittelt
     };
 
     const currentId = this.id();
 
     if (this.isEditMode() && currentId) {
-      // FIX: .subscribe() hinzugefügt, da die Methode ein Observable zurückgibt!
       this.addressService.updateAddress({ id: currentId, ...addressData }).subscribe({
         next: () => this.router.navigate(['/']),
         error: (err) => this.handleError(err),

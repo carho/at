@@ -10,6 +10,7 @@ export interface Address {
   zipCode: string;
   country: string;
   category: 'Personal' | 'Work' | 'Other';
+  birthday?: string | null;
 }
 export interface AddressResponse {
   data: Address[];

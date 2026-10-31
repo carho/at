@@ -90,6 +90,27 @@ export class AddressService {
   getAddressById(id: string): Address | undefined {
     return this.addressesSignal().find((addr: Address) => addr.id === id);
   }
+  calculateAge(birthday?: string): string {
+    if (!birthday) return '';
+
+    const birthDate = new Date(birthday);
+
+    // Prüfen, ob ein gültiges Jahr angegeben wurde (z.B. nicht das Standard-Fallback-Jahr 1970)
+    // Wenn dein Formular bei fehlendem Jahr ein fiktives Jahr wie "0000" oder "1900" sendet, fangen wir das hier ab:
+    if (isNaN(birthDate.getTime()) || birthDate.getFullYear() <= 1904) {
+      return '-'; // Jahr fehlt oder ist ungültig -> Alter kann nicht berechnet werden
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age >= 0 ? `${age} Jahre` : '-';
+  }
 
   // --- CRUD Operations ---
   addAddress(newAddress: NewAddress): Observable<{ id: string }> {

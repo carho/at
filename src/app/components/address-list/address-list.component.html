@@ -9,19 +9,22 @@
       <thead class="table-dark">
       <!-- Zeile 1: Spalten-Sortierung -->
       <tr>
-        <th (click)="addressService.changeSort('lastName')" style="cursor: pointer; user-select: none; width: 25%;">
+        <th (click)="addressService.changeSort('lastName')" style="cursor: pointer; user-select: none; width: 20%;">
           Name
           @if (addressService.sortField() === 'lastName') {
             {{ addressService.sortOrder() === 'asc' ? '▲' : '▼' }}
           }
         </th>
-        <th style="width: 25%;">Email</th>
-        <th (click)="addressService.changeSort('city')" style="cursor: pointer; user-select: none; width: 20%;">
+        <th style="width: 20%;">Email</th>
+        <th (click)="addressService.changeSort('city')" style="cursor: pointer; user-select: none; width: 15%;">
           Stadt
           @if (addressService.sortField() === 'city') {
             {{ addressService.sortOrder() === 'asc' ? '▲' : '▼' }}
           }
         </th>
+        <!-- NEU: Header für Geburtstag & Alter -->
+        <th style="width: 15%;">Geburtstag / Alter</th>
+
         <th (click)="addressService.changeSort('category')" style="cursor: pointer; user-select: none; width: 15%;">
           Kategorie
           @if (addressService.sortField() === 'category') {
@@ -42,13 +45,17 @@
             <input type="text" class="form-control form-control-sm" placeholder="Nachname..."
                    [value]="addressService.columnFilters().lastName"
                    (input)="addressService.updateColumnFilter('lastName', $any($event.target).value)">
-          </div>        </th>
+          </div>
+        </th>
         <th><!-- Email wird nicht gefiltert --></th>
         <th>
           <input type="text" class="form-control form-control-sm" placeholder="Stadt filtern..."
                  [value]="addressService.columnFilters().city"
                  (input)="addressService.updateColumnFilter('city', $any($event.target).value)">
         </th>
+        <!-- NEU: Platzhalter in der Filterzeile für Geburtstag -->
+        <th></th>
+
         <th>
           <select class="form-select form-select-sm"
                   [value]="addressService.columnFilters().category"
@@ -69,6 +76,28 @@
             <td><strong>{{ addr.lastName }}</strong>, {{ addr.firstName }}</td>
             <td>{{ addr.email }}</td>
             <td>{{ addr.city }}</td>
+
+            <!-- Ersetze den Geburtstag-TD-Block in deiner Listen-HTML durch das hier: -->
+            <td>
+              @if (addr.birthday) {
+                <div>
+                  @if (addr.birthday.startsWith('--')) {
+                    <!-- Schneidet '--10-02' um und macht '02.10.' daraus -->
+                    {{ addr.birthday.substring(5) }}.{{ addr.birthday.substring(2, 4) }}.
+                  } @else {
+                    <!-- Standard ISO-Format 'YYYY-MM-DD' zu 'DD.MM.YYYY' konvertieren -->
+                    {{ addr.birthday.substring(8, 10) }}.{{ addr.birthday.substring(5, 7) }}.{{ addr.birthday.substring(0, 4) }}
+                  }
+                </div>
+                @if (!addr.birthday.startsWith('--')) {
+                  <small class="text-muted">({{ addressService.calculateAge(addr.birthday) }})</small>
+                }
+              } @else {
+                <span class="text-muted small">-</span>
+              }
+            </td>
+
+
             <td><span class="badge bg-secondary">{{ addr.category }}</span></td>
             <td>
               <a [routerLink]="['/edit', addr.id]" class="btn btn-sm btn-warning me-2">Bearbeiten</a>
@@ -76,13 +105,13 @@
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="5" class="text-center text-muted py-4">Keine Adressbucheinträge für diese Filterkombination gefunden.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted py-4">Keine Adressbucheinträge für diese Filterkombination gefunden.</td></tr>
         }
       </tbody>
     </table>
   </div>
 
-  <!-- Pagination-Footer (Bleibt identisch wie vorher) -->
+  <!-- Pagination-Footer -->
   <div class="d-flex justify-content-between align-items-center mt-3">
     <span class="text-muted small">
       Seite {{ addressService.currentPage() }} von {{ addressService.totalPages() }} (Gesamt: {{ addressService.totalItems() }})
@@ -93,7 +122,7 @@
           <button type="button" class="page-link" (click)="addressService.currentPage.update(p => p - 1)">Zurück</button>
         </li>
         <li class="page-item active"><span class="page-link">{{ addressService.currentPage() }}</span></li>
-        <li class="page-item" [class.disabled]="addressService.currentPage() === addressService.totalPages() || addressService.totalPages() === 0">
+        <li class="page-item" [class.disabled]="addressService.currentPage() >= addressService.totalPages() || addressService.totalPages() === 0">
           <button type="button" class="page-link" (click)="addressService.currentPage.update(p => p + 1)">Vor</button>
         </li>
       </ul>
