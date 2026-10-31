@@ -1,8 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { rxResource, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Address, NewAddress, AddressResponse } from '../models/address.model';
-import { Observable, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Observable, tap } from 'rxjs';
 
 export interface ColumnFilters {
   firstName: string;
@@ -25,6 +25,16 @@ export class AddressService {
     city: '',
     category: '',
   });
+  // --- DEBOUNCE LOGIK (NEU) ---
+  // Wir machen ein Observable aus den Filtern, verzögern es und wandeln es zurück in ein Signal um.
+  // Das sorgt dafür, dass die rxResource nicht bei jedem Tastendruck triggert.
+  private debouncedFilters = toSignal(
+    toObservable(this.columnFilters).pipe(
+      debounceTime(400), // 400 Millisekunden warten, nachdem der Nutzer aufgehört hat zu tippen
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+    ),
+    { initialValue: { firstName: '', lastName: '', city: '', category: '' } },
+  );
 
   currentPage = signal<number>(1);
   pageSize = signal<number>(5);
@@ -39,10 +49,10 @@ export class AddressService {
       limit: this.pageSize().toString(),
       sort: this.sortField(),
       order: this.sortOrder(),
-      filterFirstName: this.columnFilters().firstName,
-      filterLastName: this.columnFilters().lastName,
-      filterCity: this.columnFilters().city,
-      filterCategory: this.columnFilters().category,
+      filterFirstName: this.debouncedFilters().firstName,
+      filterLastName: this.debouncedFilters().lastName, // <-- Hier greift das Debounce für den Nachnamen!
+      filterCity: this.debouncedFilters().city, // (Profitiert jetzt automatisch auch davon)
+      filterCategory: this.debouncedFilters().category,
     }),
     stream: (ctx) => {
       // ctx.request enthält die oben definierten Parameter
