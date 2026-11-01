@@ -11,6 +11,4 @@ import { AddressService } from '../../services/address.service';
 })
 export class AddressListComponent {
   addressService = inject(AddressService);
-
-
 }
