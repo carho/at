@@ -38,8 +38,11 @@ export class FormFieldComponent {
     const state = this.fieldState();
     if (!state) return false;
 
-    // Nutzt die nativen Signale .invalid() und .touched() von Signal Forms
-    return !!(this.submitted() || state.touched?.()) && !!state.invalid?.();
+    // KORREKTUR: Zeige den Fehler auch, wenn das Feld verändert wurde (state.dirty())
+    // oder das Formular abgeschickt wurde.
+    const isInteracted = this.submitted() || state.touched?.() || state.dirty?.();
+
+    return !!isInteracted && !!state.invalid?.();
   });
 
   // 3. Dynamische Ermittlung des Fehlers aus dem errors()-Signal Array

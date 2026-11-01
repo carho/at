@@ -64,11 +64,26 @@
           </div>
 
           <!-- Land -->
-          <div class="col-md-6 mb-3">
+          <!-- In deiner address-form.component.html -->
+          <div class="mb-3">
             <app-form-field labelText="Land *" [field]="addressForm.country" [submitted]="formSubmitted()">
-              <input type="text" class="form-control" [formField]="addressForm.country" />
+
+              <!-- KORREKTUR: addressForm.country() aufrufen und .value.set() nutzen -->
+              <select
+                class="form-select"
+                [formField]="addressForm.country"
+                (change)="addressForm.country().value.set($any($event.target).value)">
+                <option value="" disabled selected>Bitte ein Land auswählen...</option>
+                <option value="Deutschland">Deutschland</option>
+                <option value="Österreich">Österreich</option>
+                <option value="Schweiz">Schweiz</option>
+              </select>
+
             </app-form-field>
           </div>
+
+
+
         </div>
 
         <!-- Kategorie -->

@@ -37,6 +37,12 @@ export class AddressFormComponent implements OnInit {
   isEditMode = signal(false);
   id = signal<string | null>(null);
 
+  countries = signal([
+    { code: 'Deutschland', name: 'Deutschland' },
+    { code: 'Österreich', name: 'Österreich' },
+    { code: 'Schweiz', name: 'Schweiz' },
+  ]);
+
   days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
   months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
 
@@ -90,25 +96,6 @@ export class AddressFormComponent implements OnInit {
     return this.formModel().hideYear
       ? 'Geburtstag (Ohne Jahreszahl)'
       : 'Exaktes Geburtsdatum (Optional)';
-  });
-
-  isEmailValid = computed(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(this.formModel().email);
-  });
-
-  isFormValid = computed(() => {
-    const m = this.formModel();
-    return (
-      m.firstName.trim().length > 0 &&
-      m.lastName.trim().length > 0 &&
-      this.isEmailValid() &&
-      m.phone.trim().length > 0 &&
-      m.street.trim().length > 0 &&
-      m.city.trim().length > 0 &&
-      m.zipCode.trim().length > 0 &&
-      m.country.trim().length > 0
-    );
   });
 
   constructor() {}
@@ -168,12 +155,17 @@ export class AddressFormComponent implements OnInit {
     event.preventDefault();
     this.formSubmitted.set(true);
 
-    if (!this.isFormValid()) {
+    // 1. KORREKTUR: Nutze markAsTouched() auf dem Zustandsobjekt
+    this.addressForm().markAsTouched();
+
+    // 2. KORREKTUR: Gültigkeit über das Signal auf dem Zustand abfragen
+    if (!this.addressForm().valid()) {
       alert('Bitte fülle alle Pflichtfelder korrekt aus!');
       return;
     }
 
     const currentModel = this.formModel();
+    // ... restlicher Code bleibt identisch
     let formattedBirthday: string | null = null;
 
     if (currentModel.birthdayDate) {
