@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed, linkedSignal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { form, FormField } from '@angular/forms/signals';
+import { form, FormField, required, email  } from '@angular/forms/signals';
 import { AddressService } from '../../services/address.service';
 import { NewAddress } from '../../models/address.model';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -55,7 +55,17 @@ export class AddressFormComponent implements OnInit {
     hideYear: false,
   });
 
-  addressForm = form(this.formModel);
+  addressForm = form(this.formModel, (schema) => {
+    required(schema.firstName); // Markiert Vorname als Pflichtfeld
+    required(schema.lastName);
+    required(schema.email);
+    email(schema.email); // Validiert echtes E-Mail-Format
+    required(schema.phone);
+    required(schema.street);
+    required(schema.city);
+    required(schema.zipCode);
+    required(schema.country);
+  });
 
   selectedDay = linkedSignal({
     source: () => this.formModel().birthdayDate,

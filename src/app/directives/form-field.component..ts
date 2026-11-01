@@ -1,26 +1,72 @@
-import { Component, input } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 
 @Component({
   selector: 'app-form-field',
   standalone: true,
   template: `
     <div class="form-group">
-      <!-- Nutzung des neuen Namens zur Vermeidung von HTML-Konflikten -->
       <label>{{ labelText() }}</label>
 
-      <!-- Hier wird das Input-Feld aus dem Haupttemplate eingesetzt -->
+      <!-- Hier wird das Input-Feld platziert -->
       <ng-content></ng-content>
 
-      <!-- KORREKTUR: Safe-Navigation (?.) hinzugefügt, da Methoden beim Start fehlen -->
-      @if ((submitted() || field()?.touched?.()) && !field()?.valid?.()) {
-        <div class="error-message">Bitte überprüfe dieses Pflichtfeld.</div>
+      <!-- Dynamische Fehlermeldung anzeigen -->
+      @if (showError() && errorMessage()) {
+        <div
+          class="error-message"
+          style="color: #dc3545; font-size: 0.85rem; margin-top: 4px; font-weight: 500;"
+        >
+          {{ errorMessage() }}
+        </div>
       }
     </div>
   `,
 })
 export class FormFieldComponent {
-  // Zur Sicherheit 'labelText' statt 'label' nutzen, um HTML-Attributkollisionen zu verhindern
   labelText = input.required<string>();
   field = input.required<any>();
   submitted = input<boolean>(false);
+
+  // 1. Zustand des Feldes ermitteln (Wichtig: field()() ruft den FieldState ab)
+  private fieldState = computed(() => {
+    const node = this.field();
+    return typeof node === 'function' ? node() : null;
+  });
+
+  // 2. Bedingung zur Fehleranzeige: Formular abgeschickt ODER Feld berührt
+  showError = computed(() => {
+    const state = this.fieldState();
+    if (!state) return false;
+
+    // Nutzt die nativen Signale .invalid() und .touched() von Signal Forms
+    return !!(this.submitted() || state.touched?.()) && !!state.invalid?.();
+  });
+
+  // 3. Dynamische Ermittlung des Fehlers aus dem errors()-Signal Array
+  errorMessage = computed(() => {
+    const state = this.fieldState();
+    if (!state || !state.errors) return '';
+
+    const errorsList = state.errors(); // errors() liefert ein Array [{kind: '...', message: '...'}]
+    if (!errorsList || errorsList.length === 0) return '';
+
+    const firstError = errorsList[0];
+
+    // Falls im Validator eine Custom-Message hinterlegt wurde, nimm diese
+    if (firstError.message) {
+      return firstError.message;
+    }
+
+    // Zentrale Übersetzung anhand des Fehler-Typs ('kind')
+    switch (firstError.kind) {
+      case 'required':
+        return 'Dieses Feld ist ein Pflichtfeld.';
+      case 'email':
+        return 'Bitte gib eine gültige E-Mail-Adresse ein.';
+      case 'minLength':
+        return 'Die Eingabe ist zu kurz.';
+      default:
+        return 'Bitte überprüfe die Eingabe in diesem Feld.';
+    }
+  });
 }
