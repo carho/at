@@ -5,7 +5,7 @@ import { AddressService } from '../../services/address.service';
 import { NewAddress } from '../../models/address.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormFieldComponent } from '../../directives/form-field.component.';
-
+import { germanZipCode, countryDependentZipCode } from '../../validators/zip-code.validator';
 
 interface AddressFormModel {
   firstName: string;
@@ -65,6 +65,8 @@ export class AddressFormComponent implements OnInit {
     required(schema.city);
     required(schema.zipCode);
     required(schema.country);
+
+    countryDependentZipCode(schema.zipCode, schema.country);
   });
 
   selectedDay = linkedSignal({
