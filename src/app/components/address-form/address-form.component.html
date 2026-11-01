@@ -1,113 +1,135 @@
 <div class="container mt-4" style="max-width: 600px;">
-  <h3>{{ isEditMode() ? 'Adresse bearbeiten' : 'Neue Adresse anlegen' }}</h3>
-
-  <form (ngSubmit)="onSubmit()">
-    <div class="row g-3">
-      <!-- Vorname -->
-      <div class="col-6">
-        <label class="form-label">Vorname</label>
-        <input
-          [(ngModel)]="firstName"
-          name="firstName"
-          class="form-control"
-          [appSignalValid]="firstName().trim().length > 0"
-          errorMessage="Der Vorname ist ein Pflichtfeld."
-        >
-      </div>
-      <!-- Nachname -->
-      <div class="col-6">
-        <label class="form-label">Nachname</label>
-        <input [(ngModel)]="lastName" name="lastName" class="form-control" required>
-      </div>
-
-      <!-- E-Mail mit berechneter Validierungs-Visualisierung -->
-      <div class="col-12">
-        <label class="form-label">E-Mail</label>
-        <input
-          [(ngModel)]="email"
-          name="email"
-          type="email"
-          class="form-control"
-          [appSignalValid]="email().length === 0 || isEmailValid()"
-          errorMessage="Bitte gib eine gültige E-Mail-Adresse ein."
-        >
-      </div>
-      <!-- Telefon -->
-      <div class="col-12">
-        <label class="form-label">Telefon</label>
-        <input [(ngModel)]="phone" name="phone" class="form-control"
-               [appSignalValid]="phone().trim().length > 0"
-               errorMessage="Das telefon ist ein Pflichtfeld.">
-      </div>
-
-      <!-- Straße -->
-      <div class="col-12">
-        <label class="form-label">Straße & Hausnummer</label>
-        <input [(ngModel)]="street" name="street" class="form-control" required>
-      </div>
-
-
-      <!-- Stadt -->
-      <div class="col-6">
-        <label class="form-label">Stadt *</label>
-        <input
-          [(ngModel)]="city"
-          name="city"
-          class="form-control"
-          [class.is-invalid]="formSubmitted() && city().trim().length === 0"
-          required
-        >
-        <!-- Die Fehlermeldung wird von Bootstrap eingeblendet, wenn die Input-Klasse 'is-invalid' aktiv ist -->
-        <div class="invalid-feedback">Die Stadt ist ein Pflichtfeld.</div>
-      </div>
-
-      <!-- PLZ -->
-      <div class="col-6">
-        <label class="form-label">PLZ</label>
-        <input [(ngModel)]="zipCode" name="zipCode" class="form-control" required>
-      </div>
-
-      <!-- Bundesland -->
-      <div class="col-6">
-        <label class="form-label">Bundesland</label>
-        <input [(ngModel)]="state" name="state" class="form-control">
-      </div>
-
-      <!-- Land -->
-      <div class="col-6">
-        <label class="form-label">Land</label>
-        <input [(ngModel)]="country" name="country" class="form-control" required>
-      </div>
-
-      <!-- Kategorie -->
-      <div class="col-12">
-        <label class="form-label">Kategorie</label>
-        <select [(ngModel)]="category" name="category" class="form-select">
-          <option value="Personal">Privat</option>
-          <option value="Work">Geschäftlich</option>
-          <option value="Other">Sonstige</option>
-        </select>
-      </div>
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+      <h3 class="mb-0">{{ isEditMode() ? 'Adresse bearbeiten' : 'Neue Adresse anlegen' }}</h3>
     </div>
-    <!-- NEU: Geburtstag und Alter-Option integriert -->
-    <div class="col-6 p-3 bg-light rounded border">
-      <label class="form-label small fw-bold text-secondary">Geburtstag (Optional)</label>
-      <input type="date" class="form-control mb-2" name="birthdayDate" [ngModel]="birthdayDate()" (ngModelChange)="birthdayDate.set($event)">
+    <div class="card-body">
+      <form (submit)="onSubmit($event)" novalidate>
 
-      <div class="form-check form-switch">
-        <input class="form-check-input" type="checkbox" id="hideYearSwitch" name="hideYear" [ngModel]="hideYear()" (ngModelChange)="hideYear.set($event)">
-        <label class="form-check-label small text-muted" for="hideYearSwitch">
-          Geburtsjahr geheim halten (Alter wird verborgen)
-        </label>
-      </div>
-    </div>
-    <div class="mt-4 gap-2 d-flex">
-      <button type="submit" class="btn btn-success">
-        Eintrag speichern
-      </button>
-      <a routerLink="/" class="btn btn-secondary">Abbrechen</a>
-    </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Vorname *</label>
+            <input type="text" class="form-control"
+                   [class.is-invalid]="formSubmitted() && addressForm.firstName.invalid()"
+                   [class.is-valid]="formSubmitted() && addressForm.firstName.valid()"
+                   [formField]="addressForm.firstName">
+            @if (formSubmitted() && addressForm.firstName.invalid()) {
+              <div class="invalid-feedback">Der Vorname ist ein Pflichtfeld.</div>
+            }
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Nachname *</label>
+            <input type="text" class="form-control"
+                   [class.is-invalid]="formSubmitted() && addressForm.lastName.invalid()"
+                   [class.is-valid]="formSubmitted() && addressForm.lastName.valid()"
+                   [formField]="addressForm.lastName">
+            @if (formSubmitted() && addressForm.lastName.invalid()) {
+              <div class="invalid-feedback">Der Nachname ist ein Pflichtfeld.</div>
+            }
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">E-Mail *</label>
+          <input type="email" class="form-control"
+                 [class.is-invalid]="formSubmitted() && !isEmailValid()"
+                 [class.is-valid]="formSubmitted() && isEmailValid()"
+                 [formField]="addressForm.email">
+          @if (formSubmitted() && !isEmailValid()) {
+            <div class="invalid-feedback">Bitte gib eine gültige E-Mail-Adresse ein.</div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Telefon *</label>
+          <input type="text" class="form-control"
+                 [class.is-invalid]="formSubmitted() && addressForm.phone.invalid()"
+                 [class.is-valid]="formSubmitted() && addressForm.phone.valid()"
+                 [formField]="addressForm.phone">
+          @if (formSubmitted() && addressForm.phone.invalid()) {
+            <div class="invalid-feedback">Die Telefonnummer ist ein Pflichtfeld.</div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Straße &amp; Hausnummer *</label>
+          <input type="text" class="form-control"
+                 [class.is-invalid]="formSubmitted() && addressForm.street.invalid()"
+                 [class.is-valid]="formSubmitted() && addressForm.street.valid()"
+                 [formField]="addressForm.street">
+          @if (formSubmitted() && addressForm.street.invalid()) {
+            <div class="invalid-feedback">Die Straße ist ein Pflichtfeld.</div>
+          }
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Stadt *</label>
+            <input type="text" class="form-control"
+                   [class.is-invalid]="formSubmitted() && addressForm.city.invalid()"
+                   [class.is-valid]="formSubmitted() && addressForm.city.valid()"
+                   [formField]="addressForm.city">
+            @if (formSubmitted() && addressForm.city.invalid()) {
+              <div class="invalid-feedback">Die Stadt ist ein Pflichtfeld.</div>
+            }
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">PLZ *</label>
+            <input type="text" class="form-control"
+                   [class.is-invalid]="formSubmitted() && addressForm.zipCode.invalid()"
+                   [class.is-valid]="formSubmitted() && addressForm.zipCode.valid()"
+                   [formField]="addressForm.zipCode">
+            @if (formSubmitted() && addressForm.zipCode.invalid()) {
+              <div class="invalid-feedback">Die PLZ ist ein Pflichtfeld.</div>
+            }
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Bundesland</label>
+            <input type="text" class="form-control" [formField]="addressForm.state">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Land *</label>
+            <input type="text" class="form-control"
+                   [class.is-invalid]="formSubmitted() && addressForm.country.invalid()"
+                   [class.is-valid]="formSubmitted() && addressForm.country.valid()"
+                   [formField]="addressForm.country">
+            @if (formSubmitted() && addressForm.country.invalid()) {
+              <div class="invalid-feedback">Das Land ist ein Pflichtfeld.</div>
+            }
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Kategorie</label>
+          <select class="form-select" [formField]="addressForm.category">
+            <option value="Personal">Privat</option>
+            <option value="Work">Geschäftlich</option>
+            <option value="Other">Sonstige</option>
+          </select>
+        </div>
+
+        <!-- Geburtstag und Alter-Option -->
+        <div class="mb-4 p-3 bg-light rounded border">
+          <label class="form-label small fw-bold text-secondary">Geburtstag (Optional)</label>
+          <input type="date" class="form-control mb-2" [formField]="addressForm.birthdayDate">
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="hideYearSwitch" [formField]="addressForm.hideYear">
+            <label class="form-check-label small text-muted" for="hideYearSwitch">
+              Geburtsjahr geheim halten (Alter wird verborgen)
+            </label>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center border-top pt-3">
+          <a routerLink="/" class="btn btn-outline-secondary">Abbrechen</a>
+          <button type="submit" class="btn btn-success">Eintrag speichern</button>
+        </div>
 
       </form>
     </div>
-
+  </div>
+</div>
