@@ -5,20 +5,22 @@ import { Component, input } from '@angular/core';
   standalone: true,
   template: `
     <div class="form-group">
-      <label>{{ label() }}</label>
+      <!-- Nutzung des neuen Namens zur Vermeidung von HTML-Konflikten -->
+      <label>{{ labelText() }}</label>
 
       <!-- Hier wird das Input-Feld aus dem Haupttemplate eingesetzt -->
       <ng-content></ng-content>
 
-      <!-- Zentrale Fehlerbehandlung für alle Felder -->
-      @if ((submitted() || field().touched()) && !field().valid()) {
+      <!-- KORREKTUR: Safe-Navigation (?.) hinzugefügt, da Methoden beim Start fehlen -->
+      @if ((submitted() || field()?.touched?.()) && !field()?.valid?.()) {
         <div class="error-message">Bitte überprüfe dieses Pflichtfeld.</div>
       }
     </div>
   `,
 })
 export class FormFieldComponent {
-  label = input.required<string>();
-  field = input.required<any>(); // Nimmt z.B. addressForm.firstName entgegen
+  // Zur Sicherheit 'labelText' statt 'label' nutzen, um HTML-Attributkollisionen zu verhindern
+  labelText = input.required<string>();
+  field = input.required<any>();
   submitted = input<boolean>(false);
 }

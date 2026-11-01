@@ -7,35 +7,35 @@
       <form (submit)="onSubmit($event)">
         <!-- Vorname -->
         <div class="mb-3">
-          <app-form-field label="Vorname *" [field]="addressForm.firstName" [submitted]="formSubmitted()">
+          <app-form-field labelText="Vorname *" [field]="addressForm.firstName" [submitted]="formSubmitted()">
             <input type="text" class="form-control" [formField]="addressForm.firstName" />
           </app-form-field>
         </div>
 
         <!-- Nachname -->
         <div class="mb-3">
-          <app-form-field label="Nachname *" [field]="addressForm.lastName" [submitted]="formSubmitted()">
+          <app-form-field labelText="Nachname *" [field]="addressForm.lastName" [submitted]="formSubmitted()">
             <input type="text" class="form-control" [formField]="addressForm.lastName" />
           </app-form-field>
         </div>
 
         <!-- E-Mail -->
         <div class="mb-3">
-          <app-form-field label="E-Mail *" [field]="addressForm.email" [submitted]="formSubmitted()">
+          <app-form-field labelText="E-Mail *" [field]="addressForm.email" [submitted]="formSubmitted()">
             <input type="email" class="form-control" [formField]="addressForm.email" />
           </app-form-field>
         </div>
 
         <!-- Telefon -->
         <div class="mb-3">
-          <app-form-field label="Telefon *" [field]="addressForm.phone" [submitted]="formSubmitted()">
+          <app-form-field labelText="Telefon *" [field]="addressForm.phone" [submitted]="formSubmitted()">
             <input type="tel" class="form-control" [formField]="addressForm.phone" />
           </app-form-field>
         </div>
 
         <!-- Straße & Hausnummer -->
         <div class="mb-3">
-          <app-form-field label="Straße & Hausnummer *" [field]="addressForm.street" [submitted]="formSubmitted()">
+          <app-form-field labelText="Straße & Hausnummer *" [field]="addressForm.street" [submitted]="formSubmitted()">
             <input type="text" class="form-control" [formField]="addressForm.street" />
           </app-form-field>
         </div>
@@ -43,14 +43,14 @@
         <div class="row">
           <!-- Stadt -->
           <div class="col-md-6 mb-3">
-            <app-form-field label="Stadt *" [field]="addressForm.city" [submitted]="formSubmitted()">
+            <app-form-field labelText="Stadt *" [field]="addressForm.city" [submitted]="formSubmitted()">
               <input type="text" class="form-control" [formField]="addressForm.city" />
             </app-form-field>
           </div>
 
           <!-- PLZ -->
           <div class="col-md-6 mb-3">
-            <app-form-field label="PLZ *" [field]="addressForm.zipCode" [submitted]="formSubmitted()">
+            <app-form-field labelText="PLZ *" [field]="addressForm.zipCode" [submitted]="formSubmitted()">
               <input type="text" class="form-control" [formField]="addressForm.zipCode" />
             </app-form-field>
           </div>
@@ -65,7 +65,7 @@
 
           <!-- Land -->
           <div class="col-md-6 mb-3">
-            <app-form-field label="Land *" [field]="addressForm.country" [submitted]="formSubmitted()">
+            <app-form-field labelText="Land *" [field]="addressForm.country" [submitted]="formSubmitted()">
               <input type="text" class="form-control" [formField]="addressForm.country" />
             </app-form-field>
           </div>
@@ -93,7 +93,7 @@
         <div class="mb-3">
           @if (formModel().hideYear) {
             <!-- Hauptlabel -->
-            <label class="form-label text-dark fw-semibold mb-2">Geburtstag (Ohne Jahreszahl)</label>
+            <label class="form-label text-dark fw-semibold mb-2">Geburtstag</label>
 
             <!-- Zusammenhängende Bootstrap Input-Group -->
             <div class="input-group">
@@ -117,7 +117,7 @@
             </div>
           } @else {
             <!-- Wenn das Jahr sichtbar ist: Unverändert -->
-            <app-form-field label="Exaktes Geburtsdatum (Optional)" [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
+            <app-form-field labelText="Geburtsdatum " [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
               <input type="date" class="form-control shadow-sm" [formField]="addressForm.birthdayDate" />
             </app-form-field>
           }
