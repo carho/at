@@ -106,38 +106,35 @@
         <!-- Geburtstag -->
         <!-- Geburtstag -->
         <div class="mb-3">
-          @if (formModel().hideYear) {
-            <!-- Hauptlabel -->
-            <label class="form-label text-dark fw-semibold mb-2">Geburtstag</label>
+          <app-form-field [labelText]="birthdayLabel()" [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
+            @if (formModel().hideYear) {
+              <label class="form-label">Geburtstag</label>
+              <div class="d-flex gap-2">
+                <div class="w-50">
+                  <label class="small text-muted">Tag</label>
+                  <select class="form-select" [value]="selectedDay()" (change)="onDayChange($any($event.target).value); addressForm.birthdayDate().markAsDirty()">
+                    <option value="">wählen...</option>
+                    @for (d of days; track d) {
+                      <option [value]="d">{{ d }}</option>
+                    }
+                  </select>
+                </div>
 
-            <!-- Zusammenhängende Bootstrap Input-Group -->
-            <div class="input-group">
-              <!-- Tag-Bereich -->
-              <span class="input-group-text bg-light text-muted small">Tag</span>
-              <select class="form-select shadow-none" (change)="onDayChange($any($event.target).value)">
-                <option value="" [selected]="!selectedDay()">wählen...</option>
-                @for (d of days; track d) {
-                  <option [value]="d" [selected]="selectedDay() === d">{{ d }}</option>
-                }
-              </select>
-
-              <!-- Monat-Bereich -->
-              <span class="input-group-text bg-light text-muted small">Monat</span>
-              <select class="form-select shadow-none" (change)="onMonthChange($any($event.target).value)">
-                <option value="" [selected]="!selectedMonth()">wählen...</option>
-                @for (m of months; track m) {
-                  <option [value]="m" [selected]="selectedMonth() === m">{{ m }}</option>
-                }
-              </select>
-            </div>
-          } @else {
-            <!-- Wenn das Jahr sichtbar ist: Unverändert -->
-            <app-form-field labelText="Geburtsdatum " [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
-              <input type="date" class="form-control shadow-sm" [formField]="addressForm.birthdayDate" />
-            </app-form-field>
-          }
+                <div class="w-50">
+                  <label class="small text-muted">Monat</label>
+                  <select class="form-select" [value]="selectedMonth()" (change)="onMonthChange($any($event.target).value); addressForm.birthdayDate().markAsDirty()">
+                    <option value="">wählen...</option>
+                    @for (m of months; track m) {
+                      <option [value]="m">{{ m }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+            } @else {
+              <input type="date" class="form-control" [formField]="addressForm.birthdayDate" (change)="addressForm.birthdayDate().markAsDirty()" />
+            }
+          </app-form-field>
         </div>
-
         <!-- Geburtsjahr geheim halten -->
         <div class="mb-3 form-check">
           <input type="checkbox" class="form-check-input" id="hideYear" [formField]="addressForm.hideYear" />

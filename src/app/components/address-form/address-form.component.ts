@@ -6,6 +6,7 @@ import { NewAddress } from '../../models/address.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormFieldComponent } from '../../directives/form-field.component.';
 import { germanZipCode, countryDependentZipCode } from '../../validators/zip-code.validator';
+import { validBirthday } from '../../validators/birthday.validator';
 
 interface AddressFormModel {
   firstName: string;
@@ -73,6 +74,8 @@ export class AddressFormComponent implements OnInit {
     required(schema.country);
 
     countryDependentZipCode(schema.zipCode, schema.country);
+    // NEU: Geburtstag basierend auf der hideYear-Checkbox validieren
+    validBirthday(schema.birthdayDate, schema.hideYear);
   });
 
   selectedDay = linkedSignal({
