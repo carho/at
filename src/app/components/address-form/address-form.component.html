@@ -10,20 +10,20 @@
           <div class="col-md-6">
             <label class="form-label small fw-bold">Vorname *</label>
             <input type="text" class="form-control"
-                   [class.is-invalid]="formSubmitted() && addressForm.firstName.invalid()"
-                   [class.is-valid]="formSubmitted() && addressForm.firstName.valid()"
+                   [class.is-invalid]="formSubmitted() && formModel().firstName.trim().length === 0"
+                   [class.is-valid]="formSubmitted() && formModel().firstName.trim().length > 0"
                    [formField]="addressForm.firstName">
-            @if (formSubmitted() && addressForm.firstName.invalid()) {
+            @if (formSubmitted() && formModel().firstName.trim().length === 0) {
               <div class="invalid-feedback">Der Vorname ist ein Pflichtfeld.</div>
             }
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold">Nachname *</label>
             <input type="text" class="form-control"
-                   [class.is-invalid]="formSubmitted() && addressForm.lastName.invalid()"
-                   [class.is-valid]="formSubmitted() && addressForm.lastName.valid()"
+                   [class.is-invalid]="formSubmitted() && formModel().lastName.trim().length === 0"
+                   [class.is-valid]="formSubmitted() && formModel().lastName.trim().length > 0"
                    [formField]="addressForm.lastName">
-            @if (formSubmitted() && addressForm.lastName.invalid()) {
+            @if (formSubmitted() && formModel().lastName.trim().length === 0) {
               <div class="invalid-feedback">Der Nachname ist ein Pflichtfeld.</div>
             }
           </div>
@@ -43,10 +43,10 @@
         <div class="mb-3">
           <label class="form-label small fw-bold">Telefon *</label>
           <input type="text" class="form-control"
-                 [class.is-invalid]="formSubmitted() && addressForm.phone.invalid()"
-                 [class.is-valid]="formSubmitted() && addressForm.phone.valid()"
+                 [class.is-invalid]="formSubmitted() && formModel().phone.trim().length === 0"
+                 [class.is-valid]="formSubmitted() && formModel().phone.trim().length > 0"
                  [formField]="addressForm.phone">
-          @if (formSubmitted() && addressForm.phone.invalid()) {
+          @if (formSubmitted() && formModel().phone.trim().length === 0) {
             <div class="invalid-feedback">Die Telefonnummer ist ein Pflichtfeld.</div>
           }
         </div>
@@ -54,10 +54,10 @@
         <div class="mb-3">
           <label class="form-label small fw-bold">Straße &amp; Hausnummer *</label>
           <input type="text" class="form-control"
-                 [class.is-invalid]="formSubmitted() && addressForm.street.invalid()"
-                 [class.is-valid]="formSubmitted() && addressForm.street.valid()"
+                 [class.is-invalid]="formSubmitted() && formModel().street.trim().length === 0"
+                 [class.is-valid]="formSubmitted() && formModel().street.trim().length > 0"
                  [formField]="addressForm.street">
-          @if (formSubmitted() && addressForm.street.invalid()) {
+          @if (formSubmitted() && formModel().street.trim().length === 0) {
             <div class="invalid-feedback">Die Straße ist ein Pflichtfeld.</div>
           }
         </div>
@@ -66,20 +66,20 @@
           <div class="col-md-6">
             <label class="form-label small fw-bold">Stadt *</label>
             <input type="text" class="form-control"
-                   [class.is-invalid]="formSubmitted() && addressForm.city.invalid()"
-                   [class.is-valid]="formSubmitted() && addressForm.city.valid()"
+                   [class.is-invalid]="formSubmitted() && formModel().city.trim().length === 0"
+                   [class.is-valid]="formSubmitted() && formModel().city.trim().length > 0"
                    [formField]="addressForm.city">
-            @if (formSubmitted() && addressForm.city.invalid()) {
+            @if (formSubmitted() && formModel().city.trim().length === 0) {
               <div class="invalid-feedback">Die Stadt ist ein Pflichtfeld.</div>
             }
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold">PLZ *</label>
             <input type="text" class="form-control"
-                   [class.is-invalid]="formSubmitted() && addressForm.zipCode.invalid()"
-                   [class.is-valid]="formSubmitted() && addressForm.zipCode.valid()"
+                   [class.is-invalid]="formSubmitted() && formModel().zipCode.trim().length === 0"
+                   [class.is-valid]="formSubmitted() && formModel().zipCode.trim().length > 0"
                    [formField]="addressForm.zipCode">
-            @if (formSubmitted() && addressForm.zipCode.invalid()) {
+            @if (formSubmitted() && formModel().zipCode.trim().length === 0) {
               <div class="invalid-feedback">Die PLZ ist ein Pflichtfeld.</div>
             }
           </div>
@@ -93,10 +93,10 @@
           <div class="col-md-6">
             <label class="form-label small fw-bold">Land *</label>
             <input type="text" class="form-control"
-                   [class.is-invalid]="formSubmitted() && addressForm.country.invalid()"
-                   [class.is-valid]="formSubmitted() && addressForm.country.valid()"
+                   [class.is-invalid]="formSubmitted() && formModel().country.trim().length === 0"
+                   [class.is-valid]="formSubmitted() && formModel().country.trim().length > 0"
                    [formField]="addressForm.country">
-            @if (formSubmitted() && addressForm.country.invalid()) {
+            @if (formSubmitted() && formModel().country.trim().length === 0) {
               <div class="invalid-feedback">Das Land ist ein Pflichtfeld.</div>
             }
           </div>
