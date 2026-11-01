@@ -1,31 +1,24 @@
 import { Component, input } from '@angular/core';
-import { ReactiveFormsModule, FormControl } from '@angular/forms'; // 🔄 FIX: Korrekte Imports aus dem Core-Forms-Modul
 
 @Component({
   selector: 'app-form-field',
   standalone: true,
-  imports: [ReactiveFormsModule], // 🔄 FIX: Nutzt das standardisierte reaktive Modul
   template: `
-    <div class="mb-3">
-      <label class="form-label small fw-bold">{{ label() }}</label>
-      <input
-        [type]="type()"
-        class="form-control"
-        [class.is-invalid]="submitted() && control().invalid"
-        [class.is-valid]="submitted() && control().valid"
-        [formControl]="control()"
-      />
+    <div class="form-group">
+      <label>{{ label() }}</label>
 
-      @if (submitted() && control().invalid) {
-        <div class="invalid-feedback">{{ errorMsg() }}</div>
+      <!-- Hier wird das Input-Feld aus dem Haupttemplate eingesetzt -->
+      <ng-content></ng-content>
+
+      <!-- Zentrale Fehlerbehandlung für alle Felder -->
+      @if ((submitted() || field().touched()) && !field().valid()) {
+        <div class="error-message">Bitte überprüfe dieses Pflichtfeld.</div>
       }
     </div>
   `,
 })
 export class FormFieldComponent {
   label = input.required<string>();
-  control = input.required<FormControl>(); // 🔄 Typisiert auf FormControl statt 'any'
+  field = input.required<any>(); // Nimmt z.B. addressForm.firstName entgegen
   submitted = input<boolean>(false);
-  errorMsg = input<string>('');
-  type = input<string>('text');
 }

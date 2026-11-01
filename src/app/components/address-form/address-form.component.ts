@@ -1,12 +1,11 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, linkedSignal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { form, FormField } from '@angular/forms/signals'; // <-- Aus dem neuen Signal-Forms-Paket importiert
+import { form, FormField } from '@angular/forms/signals';
 import { AddressService } from '../../services/address.service';
 import { NewAddress } from '../../models/address.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormFieldComponent } from '../../directives/form-field.component.';
 
-// Interface für das Formular-Datenmodell (Signal Forms verlangt nicht-nullable Primitiven)
 interface AddressFormModel {
   firstName: string;
   lastName: string;
@@ -25,7 +24,7 @@ interface AddressFormModel {
 @Component({
   selector: 'app-address-form',
   standalone: true,
-  imports: [RouterLink, FormField, FormFieldComponent], // <-- FormField-Direktive hier eingebunden
+  imports: [RouterLink, FormField, FormFieldComponent],
   templateUrl: './address-form.component.html',
 })
 export class AddressFormComponent implements OnInit {
@@ -37,7 +36,9 @@ export class AddressFormComponent implements OnInit {
   isEditMode = signal(false);
   id = signal<string | null>(null);
 
-  // 1. Das zentrale, beschreibbare Signal-Model für das Formular
+  days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+  months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+
   formModel = signal<AddressFormModel>({
     firstName: '',
     lastName: '',
@@ -53,10 +54,31 @@ export class AddressFormComponent implements OnInit {
     hideYear: false,
   });
 
-  // 2. Erstellung des FieldTree über die form()-Hilfsfunktion
   addressForm = form(this.formModel);
 
-  // 3. Validierungsstatus deklarativ über die neuen Signal-Zustände ableiten
+  selectedDay = linkedSignal({
+    source: () => this.formModel().birthdayDate,
+    computation: (birthdayDate) => {
+      const parts = birthdayDate.split('-');
+      return parts.length === 3 ? parts[2] : '';
+    },
+  });
+
+  selectedMonth = linkedSignal({
+    source: () => this.formModel().birthdayDate,
+    computation: (birthdayDate) => {
+      const parts = birthdayDate.split('-');
+      return parts.length === 3 ? parts[1] : '';
+    },
+  });
+
+  // Dynamischer Text für das Hauptlabel
+  birthdayLabel = computed(() => {
+    return this.formModel().hideYear
+      ? 'Geburtstag (Ohne Jahreszahl)'
+      : 'Exaktes Geburtsdatum (Optional)';
+  });
+
   isEmailValid = computed(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(this.formModel().email);
@@ -75,6 +97,20 @@ export class AddressFormComponent implements OnInit {
       m.country.trim().length > 0
     );
   });
+
+  constructor() {}
+
+  onDayChange(day: string): void {
+    this.selectedDay.set(day);
+    const currentMonth = this.selectedMonth() || '01';
+    this.formModel.update((m) => ({ ...m, birthdayDate: `2000-${currentMonth}-${day}` }));
+  }
+
+  onMonthChange(month: string): void {
+    this.selectedMonth.set(month);
+    const currentDay = this.selectedDay() || '01';
+    this.formModel.update((m) => ({ ...m, birthdayDate: `2000-${month}-${currentDay}` }));
+  }
 
   ngOnInit(): void {
     const paramId = this.route.snapshot.paramMap.get('id');
@@ -97,7 +133,6 @@ export class AddressFormComponent implements OnInit {
           }
         }
 
-        // Das gesamte Model auf einmal reaktiv aktualisieren
         this.formModel.set({
           firstName: data.firstName || '',
           lastName: data.lastName || '',
@@ -117,7 +152,7 @@ export class AddressFormComponent implements OnInit {
   }
 
   onSubmit(event: Event): void {
-    event.preventDefault(); // Verhindert das klassische Browser-Absenden
+    event.preventDefault();
     this.formSubmitted.set(true);
 
     if (!this.isFormValid()) {
