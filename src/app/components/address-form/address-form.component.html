@@ -31,9 +31,7 @@
       <input type="text" [formField]="addressForm.street" />
     </app-form-field>
 
-    <app-form-field labelText="Bundesland / Zusatz" [field]="addressForm.state" [submitted]="formSubmitted()">
-      <input type="text" [formField]="addressForm.state" placeholder="Optional" />
-    </app-form-field>
+
   </div>
 
   <!-- Zeile 4: PLZ & Ort -->
@@ -47,10 +45,14 @@
     </app-form-field>
   </div>
 
-  <!-- Zeile 5: Land & Kategorie -->
+  <!-- NEUE ZEILE: Land & Bundesland nebeneinander -->
   <div class="form-row">
     <app-form-field labelText="Land" [field]="addressForm.country" [submitted]="formSubmitted()">
-      <select [formField]="addressForm.country">
+      <!-- change-Event leert das Bundesland bei Länderwechsel, um Falscheingaben zu verhindern -->
+      <select
+        [formField]="addressForm.country"
+        (change)="formModel.update(m => ({ ...m, state: '' }))"
+      >
         <option value="">Bitte ein Land auswählen...</option>
         @for (c of countries(); track c.code) {
           <option [value]="c.code">{{ c.name }}</option>
@@ -58,6 +60,20 @@
       </select>
     </app-form-field>
 
+    <app-form-field labelText="Bundesland" [field]="addressForm.state" [submitted]="formSubmitted()">
+      <!-- Das [disabled] wurde hier entfernt, da es jetzt von TypeScript verwaltet wird -->
+      <select [formField]="addressForm.state">
+        <option value="">Bitte wählen...</option>
+        @for (s of filteredStates(); track s) {
+          <option [value]="s">{{ s }}</option>
+        }
+      </select>
+    </app-form-field>
+
+  </div>
+
+  <!-- FOLGEZEILE: Die Kategorie wandert in eine eigene Zeile (oder teilt sich den Platz mit einem anderen Feld) -->
+  <div class="form-row">
     <app-form-field labelText="Kategorie" [field]="addressForm.category" [submitted]="formSubmitted()">
       <select [formField]="addressForm.category">
         <option value="Personal">Privat</option>
@@ -66,6 +82,7 @@
       </select>
     </app-form-field>
   </div>
+
 
   <!-- Zeile 6: Geburtstag & Optionen -->
   <div class="birthday-section">

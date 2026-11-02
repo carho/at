@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, signal, computed, linkedSignal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, linkedSignal, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { form, FormField, required, email  } from '@angular/forms/signals';
+import { form, FormField, required, email, disabled } from '@angular/forms/signals';
 import { AddressService } from '../../services/address.service';
 import { NewAddress } from '../../models/address.model';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -21,7 +21,7 @@ interface AddressFormModel {
   category: 'Personal' | 'Work' | 'Other';
   birthdayDate: string;
   hideYear: boolean;
-}
+};
 
 @Component({
   selector: 'app-address-form',
@@ -37,7 +37,67 @@ export class AddressFormComponent implements OnInit {
   formSubmitted = signal(false);
   isEditMode = signal(false);
   id = signal<string | null>(null);
+  // 1. Daten-Map für die Bundesländer oberhalb oder innerhalb der Klasse definieren
 
+  private readonly statesPerCountry: Record<string, string[]> = {
+    Deutschland: [
+      'Baden-Württemberg',
+      'Bayern',
+      'Berlin',
+      'Brandenburg',
+      'Bremen',
+      'Hamburg',
+      'Hessen',
+      'Mecklenburg-Vorpommern',
+      'Niedersachsen',
+      'Nordrhein-Westfalen',
+      'Rheinland-Pfalz',
+      'Saarland',
+      'Sachsen',
+      'Sachsen-Anhalt',
+      'Schleswig-Holstein',
+      'Thüringen',
+    ],
+    Österreich: [
+      'Burgenland',
+      'Kärnten',
+      'Niederösterreich',
+      'Oberösterreich',
+      'Salzburg',
+      'Steiermark',
+      'Tirol',
+      'Vorarlberg',
+      'Wien',
+    ],
+    Schweiz: [
+      'Aargau',
+      'Appenzell Ausserrhoden',
+      'Appenzell Innerrhoden',
+      'Basel-Landschaft',
+      'Basel-Stadt',
+      'Bern',
+      'Freiburg',
+      'Genf',
+      'Glarus',
+      'Graubünden',
+      'Jura',
+      'Luzern',
+      'Neuenburg',
+      'Nidwalden',
+      'Obwalden',
+      'Schaffhausen',
+      'Schwyz',
+      'Solothurn',
+      'St. Gallen',
+      'Thurgau',
+      'Tessin',
+      'Uri',
+      'Waadt',
+      'Wallis',
+      'Zug',
+      'Zürich',
+    ],
+  };
   countries = signal([
     { code: 'Deutschland', name: 'Deutschland' },
     { code: 'Österreich', name: 'Österreich' },
@@ -76,8 +136,18 @@ export class AddressFormComponent implements OnInit {
     countryDependentZipCode(schema.zipCode, schema.country);
     // NEU: Geburtstag basierend auf der hideYear-Checkbox validieren
     validBirthday(schema.birthdayDate, schema.hideYear);
+    // NEU & REAKTIV: Das Bundesland sperren, wenn keine Bundesländer zur Auswahl stehen
+    // Wir nutzen hierfür das stabile Konfigurations-Objekt der v22 API
+    disabled(schema.state, {
+      when: () => this.filteredStates().length === 0
+    });
   });
 
+  // Dieses Signal berechnet die verfügbaren Bundesländer jedes Mal neu, wenn sich das Land ändert!
+  filteredStates = computed(() => {
+    const selectedCountry = this.formModel().country;
+    return this.statesPerCountry[selectedCountry] || [];
+  });
   selectedDay = linkedSignal({
     source: () => this.formModel().birthdayDate,
     computation: (birthdayDate) => {
