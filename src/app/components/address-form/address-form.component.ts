@@ -21,6 +21,10 @@ interface AddressFormModel {
   category: 'Personal' | 'Work' | 'Other';
   birthdayDate: string;
   hideYear: boolean;
+  // NEU: Teilfelder für die reaktive Signal-Forms-Bindung
+  birthdayDay: string;
+  birthdayMonth: string;
+
 };
 
 @Component({
@@ -120,6 +124,8 @@ export class AddressFormComponent implements OnInit {
     category: 'Personal',
     birthdayDate: '',
     hideYear: false,
+    birthdayDay: '',   // Initial leer
+    birthdayMonth: '', // Initial leer
   });
 
   addressForm = form(this.formModel, (schema) => {
@@ -139,7 +145,7 @@ export class AddressFormComponent implements OnInit {
     // NEU & REAKTIV: Das Bundesland sperren, wenn keine Bundesländer zur Auswahl stehen
     // Wir nutzen hierfür das stabile Konfigurations-Objekt der v22 API
     disabled(schema.state, {
-      when: () => this.filteredStates().length === 0
+      when: () => this.filteredStates().length === 0,
     });
   });
 
@@ -148,20 +154,28 @@ export class AddressFormComponent implements OnInit {
     const selectedCountry = this.formModel().country;
     return this.statesPerCountry[selectedCountry] || [];
   });
-  selectedDay = linkedSignal({
-    source: () => this.formModel().birthdayDate,
-    computation: (birthdayDate) => {
-      const parts = birthdayDate.split('-');
-      return parts.length === 3 ? parts[2] : '';
-    },
+  // Berechnet den Tag live und erzwingt das zweistellige Format (z.B. "05" statt "5")
+  readonly selectedDay = computed(() => {
+    const birthdayDate = this.formModel().birthdayDate;
+    if (!birthdayDate) return '';
+    const parts = birthdayDate.split('-');
+    if (parts.length !== 3) return '';
+
+    // Konvertiert den Text in eine Zahl und fügt bei Bedarf die führende Null hinzu
+    const dayNum = parseInt(parts[2], 10);
+    return isNaN(dayNum) ? '' : String(dayNum).padStart(2, '0');
   });
 
-  selectedMonth = linkedSignal({
-    source: () => this.formModel().birthdayDate,
-    computation: (birthdayDate) => {
-      const parts = birthdayDate.split('-');
-      return parts.length === 3 ? parts[1] : '';
-    },
+  // Berechnet den Monat live und erzwingt das zweistellige Format (z.B. "08" statt "8")
+  readonly selectedMonth = computed(() => {
+    const birthdayDate = this.formModel().birthdayDate;
+    if (!birthdayDate) return '';
+    const parts = birthdayDate.split('-');
+    if (parts.length !== 3) return '';
+
+    // Konvertiert den Text in eine Zahl und fügt bei Bedarf die führende Null hinzu
+    const monthNum = parseInt(parts[1], 10);
+    return isNaN(monthNum) ? '' : String(monthNum).padStart(2, '0');
   });
 
   // Dynamischer Text für das Hauptlabel
@@ -173,18 +187,28 @@ export class AddressFormComponent implements OnInit {
 
   constructor() {}
 
+  // Die Änderungs-Methoden aktualisieren nun sowohl die Teilfelder als auch das Hauptfeld
   onDayChange(day: string): void {
-    this.selectedDay.set(day);
-    const currentMonth = this.selectedMonth() || '01';
-    this.formModel.update((m) => ({ ...m, birthdayDate: `2000-${currentMonth}-${day}` }));
+    const currentMonth = this.formModel().birthdayMonth || '01';
+    this.formModel.update((m) => ({
+      ...m,
+      birthdayDay: day,
+      birthdayDate: `2000-${currentMonth}-${day}`
+    }));
+    this.addressForm.birthdayDate().markAsDirty();
   }
 
   onMonthChange(month: string): void {
-    this.selectedMonth.set(month);
-    const currentDay = this.selectedDay() || '01';
-    this.formModel.update((m) => ({ ...m, birthdayDate: `2000-${month}-${currentDay}` }));
+    const currentDay = this.formModel().birthdayDay || '01';
+    this.formModel.update((m) => ({
+      ...m,
+      birthdayMonth: month,
+      birthdayDate: `2000-${month}-${currentDay}`
+    }));
+    this.addressForm.birthdayDate().markAsDirty();
   }
 
+  // Im ngOnInit erweitern wir das Laden der Daten:
   ngOnInit(): void {
     const paramId = this.route.snapshot.paramMap.get('id');
     if (paramId) {
@@ -195,6 +219,8 @@ export class AddressFormComponent implements OnInit {
       if (data) {
         let bDayDate = '';
         let bDayHideYear = false;
+        let extractedDay = '';
+        let extractedMonth = '';
 
         if (data.birthday) {
           if (data.birthday.startsWith('--')) {
@@ -203,6 +229,13 @@ export class AddressFormComponent implements OnInit {
           } else {
             bDayHideYear = false;
             bDayDate = data.birthday;
+          }
+
+          // Teile das Datum direkt beim Laden starr auf
+          const parts = bDayDate.split('-');
+          if (parts.length === 3) {
+            extractedMonth = parts[1];
+            extractedDay = parts[2];
           }
         }
 
@@ -219,6 +252,8 @@ export class AddressFormComponent implements OnInit {
           category: (data.category as 'Personal' | 'Work' | 'Other') || 'Personal',
           birthdayDate: bDayDate,
           hideYear: bDayHideYear,
+          birthdayDay: extractedDay,   // Jetzt nativ im Signal-Formular hinterlegt
+          birthdayMonth: extractedMonth // Jetzt nativ im Signal-Formular hinterlegt
         });
       }
     }

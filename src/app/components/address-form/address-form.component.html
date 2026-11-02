@@ -86,29 +86,34 @@
 
   <!-- Zeile 6: Geburtstag & Optionen -->
   <div class="birthday-section">
-    <label class="main-birthday-label">{{ birthdayLabel() }}</label>
+    @if (formModel().hideYear) {
+      <label class="form-label">Geburtstag</label>
+      <div class="d-flex gap-2">
+        <div class="w-50">
+          <label class="small text-muted">Tag</label>
+          <!-- REINES SIGNAL FORMS BINDING via [formField] -->
+          <select class="form-select" [formField]="addressForm.birthdayDay" (change)="onDayChange($any($event.target).value)">
+            <option value="">wählen...</option>
+            @for (d of days; track d) {
+              <option [value]="d">{{ d }}</option>
+            }
+          </select>
+        </div>
 
-    <div class="form-row">
-      <!-- Tag-Auswahl -->
-      <app-form-field labelText="Tag" [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
-        <select [value]="selectedDay()" (change)="onDayChange($any($event.target).value)">
-          <option value="">wählen...</option>
-          @for (d of days; track d) {
-            <option [value]="d">{{ d }}</option>
-          }
-        </select>
-      </app-form-field>
-
-      <!-- Monat-Auswahl -->
-      <app-form-field labelText="Monat" [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
-        <select [value]="selectedMonth()" (change)="onMonthChange($any($event.target).value)">
-          <option value="">wählen...</option>
-          @for (m of months; track m) {
-            <option [value]="m">{{ m }}</option>
-          }
-        </select>
-      </app-form-field>
-    </div>
+        <div class="w-50">
+          <label class="small text-muted">Monat</label>
+          <!-- REINES SIGNAL FORMS BINDING via [formField] -->
+          <select class="form-select" [formField]="addressForm.birthdayMonth" (change)="onMonthChange($any($event.target).value)">
+            <option value="">wählen...</option>
+            @for (m of months; track m) {
+              <option [value]="m">{{ m }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    } @else {
+      <input type="date" class="form-control" [formField]="addressForm.birthdayDate" (change)="addressForm.birthdayDate().markAsDirty()" />
+    }
 
     <!-- Checkbox für Jahr ausblenden -->
     <div class="checkbox-row">
