@@ -208,3 +208,11 @@ thead tr.bg-secondary select:focus {
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
   background-color: #fff;
 }
+/* Passt das Material-FormField an die Abmessungen deiner restlichen Eingabefelder an */
+.material-datepicker-wrapper .mdc-text-field--outline {
+  min-height: 44px;
+}
+.material-datepicker-wrapper .mat-mdc-form-field-infix {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
