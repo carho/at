@@ -55,20 +55,43 @@ app-form-field.has-error textarea:focus {
 
 
 /* ==========================================================================
-   3. FORMULAR-LAYOUT & RASTER (Feste Spaltenbreiten)
+   3. FORMULAR-BOX & RASTER (Rahmen, Ecken & Header)
    ========================================================================== */
 
-/* Begrenzt die Gesamtbreite des Formulars auf Desktops */
-form {
+/* Der neue, umschließende Rahmen für das gesamte Formular */
+.form-container {
   max-width: 680px;
   width: 100%;
-  margin: 0 auto; /* Zentriert das Formular horizontal */
+  margin: 2rem auto; /* Abstand nach oben/unten und horizontal zentriert */
+  background-color: #ffffff;
+  border: 2px solid #ced4da; /* Schöner, cleaner Rahmen um die Box */
+  border-radius: 8px; /* Abgerundete Ecken für das gesamte Formular */
+  overflow: hidden; /* Wichtig, damit die Hintergrundfarbe des H3 nicht über die runden Ecken ragt */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Minimaler Schatten für Tiefe */
+}
+
+/* Der farblich hinterlegte Titel als exakt erste Zeile im Rahmen */
+.form-container h3 {
+  margin: 0;
+  padding: 16px 24px;
+  background-color: #0d6efd; /* Moderner, blauer Hintergrund (passend zum Fokus-Blau) */
+  color: #ffffff; /* Weißer Text für perfekten Kontrast */
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-bottom: 2px solid #ced4da; /* Trennlinie zum eigentlichen Formular */
+}
+
+/* Innenabstand für den eigentlichen Formular-Inhalt */
+.form-container form {
+  padding: 24px; /* Verhindert, dass die Felder direkt am Außenrahmen kleben */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Zeilenstruktur für gleich große Felder nebeneinander (z.B. Vorname / Nachname) */
 .form-row {
   display: flex;
-  gap: 20px; /* Fester, starrer Zwischenraum */
+  gap: 20px;
   width: 100%;
   margin-bottom: 1.25rem;
 }

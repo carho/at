@@ -71,6 +71,12 @@ export class FormFieldComponent {
         return 'Bitte gib eine gültige E-Mail-Adresse ein.';
       case 'minLength':
         return 'Die Eingabe ist zu kurz.';
+      case 'zipCodeDe':
+      case 'zipCodeAt':
+      case 'birthdayInvalid':
+      case 'birthdayFuture':
+        return firstError.message; // Gibt den exakten Text aus der Validator-Datei zurück
+
       default:
         return 'Bitte überprüfe die Eingabe in diesem Feld.';
     }
