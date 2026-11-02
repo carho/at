@@ -1,152 +1,112 @@
-<div class="container mt-4" style="max-width: 600px;">
-  <div class="card shadow-sm">
-    <div class="card-header bg-dark text-white">
-      <h3 class="mb-0">{{ isEditMode() ? 'Adresse bearbeiten' : 'Neue Adresse anlegen' }}</h3>
+<h3>{{ isEditMode() ? 'Adresse bearbeiten' : 'Neue Adresse anlegen' }}</h3>
+
+<form (submit)="onSubmit($event)">
+
+  <!-- Zeile 1: Vorname & Nachname -->
+  <div class="form-row">
+    <app-form-field labelText="Vorname" [field]="addressForm.firstName" [submitted]="formSubmitted()">
+      <input type="text" [formField]="addressForm.firstName" />
+    </app-form-field>
+
+    <app-form-field labelText="Nachname" [field]="addressForm.lastName" [submitted]="formSubmitted()">
+      <input type="text" [formField]="addressForm.lastName" />
+    </app-form-field>
+  </div>
+
+  <!-- Zeile 2: E-Mail & Telefon -->
+  <div class="form-row">
+    <app-form-field labelText="E-Mail" [field]="addressForm.email" [submitted]="formSubmitted()">
+      <input type="email" [formField]="addressForm.email" />
+    </app-form-field>
+
+    <app-form-field labelText="Telefon" [field]="addressForm.phone" [submitted]="formSubmitted()">
+      <input type="tel" [formField]="addressForm.phone" />
+    </app-form-field>
+  </div>
+
+  <!-- Zeile 3: Straße & Bundesland / Zusatz -->
+  <div class="form-grid-street">
+    <app-form-field labelText="Straße" [field]="addressForm.street" [submitted]="formSubmitted()">
+      <input type="text" [formField]="addressForm.street" />
+    </app-form-field>
+
+    <app-form-field labelText="Bundesland / Zusatz" [field]="addressForm.state" [submitted]="formSubmitted()">
+      <input type="text" [formField]="addressForm.state" placeholder="Optional" />
+    </app-form-field>
+  </div>
+
+  <!-- Zeile 4: PLZ & Ort -->
+  <div class="form-grid-zip-city">
+    <app-form-field labelText="PLZ" [field]="addressForm.zipCode" [submitted]="formSubmitted()">
+      <input type="text" [formField]="addressForm.zipCode" />
+    </app-form-field>
+
+    <app-form-field labelText="Ort" [field]="addressForm.city" [submitted]="formSubmitted()">
+      <input type="text" [formField]="addressForm.city" />
+    </app-form-field>
+  </div>
+
+  <!-- Zeile 5: Land & Kategorie -->
+  <div class="form-row">
+    <app-form-field labelText="Land" [field]="addressForm.country" [submitted]="formSubmitted()">
+      <select [formField]="addressForm.country">
+        <option value="">Bitte ein Land auswählen...</option>
+        @for (c of countries(); track c.code) {
+          <option [value]="c.code">{{ c.name }}</option>
+        }
+      </select>
+    </app-form-field>
+
+    <app-form-field labelText="Kategorie" [field]="addressForm.category" [submitted]="formSubmitted()">
+      <select [formField]="addressForm.category">
+        <option value="Personal">Privat</option>
+        <option value="Work">Geschäftlich</option>
+        <option value="Other">Sonstige</option>
+      </select>
+    </app-form-field>
+  </div>
+
+  <!-- Zeile 6: Geburtstag & Optionen -->
+  <div class="birthday-section">
+    <label class="main-birthday-label">{{ birthdayLabel() }}</label>
+
+    <div class="form-row">
+      <!-- Tag-Auswahl -->
+      <app-form-field labelText="Tag" [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
+        <select [value]="selectedDay()" (change)="onDayChange($any($event.target).value)">
+          <option value="">wählen...</option>
+          @for (d of days; track d) {
+            <option [value]="d">{{ d }}</option>
+          }
+        </select>
+      </app-form-field>
+
+      <!-- Monat-Auswahl -->
+      <app-form-field labelText="Monat" [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
+        <select [value]="selectedMonth()" (change)="onMonthChange($any($event.target).value)">
+          <option value="">wählen...</option>
+          @for (m of months; track m) {
+            <option [value]="m">{{ m }}</option>
+          }
+        </select>
+      </app-form-field>
     </div>
-    <div class="card-body">
-      <form (submit)="onSubmit($event)">
-        <!-- Vorname -->
-        <div class="mb-3">
-          <app-form-field labelText="Vorname *" [field]="addressForm.firstName" [submitted]="formSubmitted()">
-            <input type="text" class="form-control" [formField]="addressForm.firstName" />
-          </app-form-field>
-        </div>
 
-        <!-- Nachname -->
-        <div class="mb-3">
-          <app-form-field labelText="Nachname *" [field]="addressForm.lastName" [submitted]="formSubmitted()">
-            <input type="text" class="form-control" [formField]="addressForm.lastName" />
-          </app-form-field>
-        </div>
-
-        <!-- E-Mail -->
-        <div class="mb-3">
-          <app-form-field labelText="E-Mail *" [field]="addressForm.email" [submitted]="formSubmitted()">
-            <input type="email" class="form-control" [formField]="addressForm.email" />
-          </app-form-field>
-        </div>
-
-        <!-- Telefon -->
-        <div class="mb-3">
-          <app-form-field labelText="Telefon *" [field]="addressForm.phone" [submitted]="formSubmitted()">
-            <input type="tel" class="form-control" [formField]="addressForm.phone" />
-          </app-form-field>
-        </div>
-
-        <!-- Straße & Hausnummer -->
-        <div class="mb-3">
-          <app-form-field labelText="Straße & Hausnummer *" [field]="addressForm.street" [submitted]="formSubmitted()">
-            <input type="text" class="form-control" [formField]="addressForm.street" />
-          </app-form-field>
-        </div>
-
-        <div class="row">
-          <!-- Stadt -->
-          <div class="col-md-6 mb-3">
-            <app-form-field labelText="Stadt *" [field]="addressForm.city" [submitted]="formSubmitted()">
-              <input type="text" class="form-control" [formField]="addressForm.city" />
-            </app-form-field>
-          </div>
-
-          <!-- PLZ -->
-          <div class="col-md-6 mb-3">
-            <app-form-field labelText="PLZ *" [field]="addressForm.zipCode" [submitted]="formSubmitted()">
-              <input type="text" class="form-control" [formField]="addressForm.zipCode" />
-            </app-form-field>
-          </div>
-        </div>
-
-        <div class="row">
-          <!-- Bundesland -->
-          <div class="col-md-6 mb-3">
-            <label for="state" class="form-label">Bundesland</label>
-            <input id="state" type="text" class="form-control" [formField]="addressForm.state" />
-          </div>
-
-          <!-- Land -->
-          <!-- In deiner address-form.component.html -->
-          <div class="mb-3">
-            <app-form-field labelText="Land *" [field]="addressForm.country" [submitted]="formSubmitted()">
-
-              <!-- KORREKTUR: addressForm.country() aufrufen und .value.set() nutzen -->
-              <select
-                class="form-select"
-                [formField]="addressForm.country"
-                (change)="addressForm.country().value.set($any($event.target).value)">
-                <option value="" disabled selected>Bitte ein Land auswählen...</option>
-                <option value="Deutschland">Deutschland</option>
-                <option value="Österreich">Österreich</option>
-                <option value="Schweiz">Schweiz</option>
-              </select>
-
-            </app-form-field>
-          </div>
-
-
-
-        </div>
-
-        <!-- Kategorie -->
-        <div class="mb-3">
-          <label class="form-label d-block">Kategorie</label>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" value="Personal" id="catPersonal" [formField]="addressForm.category" />
-            <label class="form-check-label" for="catPersonal">Privat</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" value="Work" id="catWork" [formField]="addressForm.category" />
-            <label class="form-check-label" for="catWork">Geschäftlich</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" value="Other" id="catOther" [formField]="addressForm.category" />
-            <label class="form-check-label" for="catOther">Sonstige</label>
-          </div>
-        </div>
-
-        <!-- Geburtstag -->
-        <!-- Geburtstag -->
-        <div class="mb-3">
-          <app-form-field [labelText]="birthdayLabel()" [field]="addressForm.birthdayDate" [submitted]="formSubmitted()">
-            @if (formModel().hideYear) {
-              <label class="form-label">Geburtstag</label>
-              <div class="d-flex gap-2">
-                <div class="w-50">
-                  <label class="small text-muted">Tag</label>
-                  <select class="form-select" [value]="selectedDay()" (change)="onDayChange($any($event.target).value); addressForm.birthdayDate().markAsDirty()">
-                    <option value="">wählen...</option>
-                    @for (d of days; track d) {
-                      <option [value]="d">{{ d }}</option>
-                    }
-                  </select>
-                </div>
-
-                <div class="w-50">
-                  <label class="small text-muted">Monat</label>
-                  <select class="form-select" [value]="selectedMonth()" (change)="onMonthChange($any($event.target).value); addressForm.birthdayDate().markAsDirty()">
-                    <option value="">wählen...</option>
-                    @for (m of months; track m) {
-                      <option [value]="m">{{ m }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-            } @else {
-              <input type="date" class="form-control" [formField]="addressForm.birthdayDate" (change)="addressForm.birthdayDate().markAsDirty()" />
-            }
-          </app-form-field>
-        </div>
-        <!-- Geburtsjahr geheim halten -->
-        <div class="mb-3 form-check">
-          <input type="checkbox" class="form-check-input" id="hideYear" [formField]="addressForm.hideYear" />
-          <label class="form-check-label" for="hideYear">Geburtsjahr geheim halten (Alter wird verborgen)</label>
-        </div>
-
-        <!-- Buttons -->
-        <div class="d-flex justify-content-between mt-4">
-          <a routerLink="/" class="btn btn-secondary">Abbrechen</a>
-          <button type="submit" class="btn btn-dark">Eintrag speichern</button>
-        </div>
-      </form>
+    <!-- Checkbox für Jahr ausblenden -->
+    <div class="checkbox-row">
+      <input
+        type="checkbox"
+        id="hideYearCheckbox"
+        [formField]="addressForm.hideYear"
+      />
+      <label for="hideYearCheckbox">Geburtsjahr geheim halten (Alter wird verborgen)</label>
     </div>
   </div>
-</div>
+
+  <!-- Buttons -->
+  <div class="form-actions">
+    <button type="button" routerLink="/" class="btn-cancel">Abbrechen</button>
+    <button type="submit" class="btn-submit">Eintrag speichern</button>
+  </div>
+
+</form>

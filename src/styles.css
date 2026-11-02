@@ -1,5 +1,180 @@
-/* You can add global styles to this file, and also import other style files */
-css
+/* ==========================================================================
+   1. GLOBALE STYLES FÜR FORMULARFELDER (Mehr Sichtbarkeit & Fokus)
+   ========================================================================== */
+
+/* Basis-Styling für alle Eingabefelder, Select-Boxen und Textareas */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  /* 2px Stärke und ein gut sichtbares Grau für klare Konturen */
+  border: 2px solid #707070 !important;
+  border-radius: 4px;
+  /* Sanfter Übergang beim Aktivieren des Feldes */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+/* Zustand, wenn der Nutzer in das Feld klickt (Fokus) */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #0d6efd !important; /* Klares, kontrastreiches Blau */
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25) !important; /* Blauer Leuchteffekt */
+  outline: none;
+}
+
+
+/* ==========================================================================
+   2. VALIDIERUNGSFEHLER (Signal-basiertes Form-Field)
+   ========================================================================== */
+
+/* Roter Rahmen, wenn die FormFieldComponent einen Fehler meldet */
+app-form-field.has-error input,
+app-form-field.has-error select,
+app-form-field.has-error textarea {
+  border-color: #dc3545 !important; /* Identisch mit der Textfarbe des Fehlers */
+}
+
+/* Roter Fokus-Effekt beim Bearbeiten eines fehlerhaften Feldes */
+app-form-field.has-error input:focus,
+app-form-field.has-error select:focus,
+app-form-field.has-error textarea:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25) !important; /* Roter Leuchteffekt */
+}
+
+
+/* ==========================================================================
+   3. FORMULAR-LAYOUT & RASTER (Feste Spaltenbreiten)
+   ========================================================================== */
+
+/* Begrenzt die Gesamtbreite des Formulars auf Desktops */
+form {
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto; /* Zentriert das Formular horizontal */
+}
+
+/* Zeilenstruktur für gleich große Felder nebeneinander (z.B. Vorname / Nachname) */
+.form-row {
+  display: flex;
+  gap: 20px; /* Fester, starrer Zwischenraum */
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+.form-row app-form-field {
+  flex: 1 1 0px;
+  min-width: 0;
+}
+
+/* Grid-Layout für Straße (flexibel) & Bundesland/Zusatz (fest auf 180px) */
+.form-grid-street {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+/* Grid-Layout für PLZ (fest auf 120px) & Ort (nimmt den restlichen Platz ein) */
+.form-grid-zip-city {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+
+/* ==========================================================================
+   4. GEBURRSTAGS-BEREICH & CHEKBOXEN
+   ========================================================================== */
+
+/* Kompakter grauer Kasten für das Geburtsdatum */
+.birthday-section {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+  max-width: 340px; /* Begrenzt die Dropdowns (Tag/Monat) auf ein harmonisches Maß */
+}
+
+.main-birthday-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Flex-Ausrichtung für Checkbox und deren Text */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.95rem;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+
+/* ==========================================================================
+   5. FORMULAR-AKTIONEN (Buttons)
+   ========================================================================== */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 2rem;
+  border-top: 1px solid #dee2e6;
+  padding-top: 1.5rem;
+}
+
+
+/* ==========================================================================
+   6. RESPONSIVE DESIGN (Smartphone-Optimierung)
+   ========================================================================== */
+
+@media (max-width: 576px) {
+  /* Bricht alle nebeneinander liegenden Felder sauber untereinander */
+  .form-row {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  /* Setzt die festen Pixelspalten (120px/180px) auf Smartphones auf volle Breite zurück */
+  .form-grid-street,
+  .form-grid-zip-city {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  /* Geburtstagskasten nutzt mobil die volle verfügbare Breite */
+  .birthday-section {
+    max-width: 100%;
+  }
+}
+
+/* ==========================================================================
+   7. PROJEKTSPEZIFISCHE FILTER-STYLES (Aus source: 6)
+   ========================================================================== */
 thead tr.bg-secondary input,
 thead tr.bg-secondary select {
   background-color: rgba(255, 255, 255, 0.9);
@@ -9,46 +184,4 @@ thead tr.bg-secondary input:focus,
 thead tr.bg-secondary select:focus {
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
   background-color: #fff;
-}
-
-/* Hier können deine bisherigen globalen Styles stehen bleiben */
-/* Roter Rahmen, wenn das umschließende Form-Field einen Fehler meldet */
-app-form-field.has-error input,
-app-form-field.has-error select,
-app-form-field.has-error textarea {
-  border-color: #dc3545 !important; /* Nutzt das exakt gleiche Rot deiner Fehlermeldung */
-}
-
-/* Roter Fokus-Effekt beim Bearbeiten eines fehlerhaften Feldes */
-app-form-field.has-error input:focus,
-app-form-field.has-error select:focus,
-app-form-field.has-error textarea:focus {
-  border-color: #dc3545 !important;
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25) !important; /* Roter statt blauer Schatten */
-}
-/* Erhöht die Sichtbarkeit der Rahmen für alle gängigen Formularfelder */
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-select,
-textarea {
-  /* 2px Stärke und ein gut sichtbares, mittleres Grau (statt des blassen Standard-Graus) */
-  border: 2px solid #707070 !important;
-  /* Leicht abgerundete Ecken für ein modernes Design */
-  border-radius: 4px;
-  /* Sanfter Übergang beim Anklicken des Feldes */
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-/* Zustand, wenn der Nutzer in das Feld klickt (Fokus) */
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="tel"]:focus,
-select:focus,
-textarea:focus {
-  /* Der Rahmen färbt sich in ein klares, kontrastreiches Blau */
-  border-color: #0d6efd !important;
-  /* Ein leichter, blauer Schatten verstärkt den visuellen Fokus */
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25) !important;
-  outline: none;
 }
