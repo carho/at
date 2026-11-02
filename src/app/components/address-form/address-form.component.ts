@@ -12,6 +12,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
+import { FORM_DAYS, FORM_MONTHS, COUNTRIES, STATES_PER_COUNTRY } from '../../config/form-data.config'; // Pfad anpassen
 
 interface AddressFormModel {
   firstName: string;
@@ -60,73 +61,9 @@ export class AddressFormComponent implements OnInit {
   id = signal<string | null>(null);
   // 1. Daten-Map für die Bundesländer oberhalb oder innerhalb der Klasse definieren
 
-  private readonly statesPerCountry: Record<string, string[]> = {
-    Deutschland: [
-      'Baden-Württemberg',
-      'Bayern',
-      'Berlin',
-      'Brandenburg',
-      'Bremen',
-      'Hamburg',
-      'Hessen',
-      'Mecklenburg-Vorpommern',
-      'Niedersachsen',
-      'Nordrhein-Westfalen',
-      'Rheinland-Pfalz',
-      'Saarland',
-      'Sachsen',
-      'Sachsen-Anhalt',
-      'Schleswig-Holstein',
-      'Thüringen',
-    ],
-    Österreich: [
-      'Burgenland',
-      'Kärnten',
-      'Niederösterreich',
-      'Oberösterreich',
-      'Salzburg',
-      'Steiermark',
-      'Tirol',
-      'Vorarlberg',
-      'Wien',
-    ],
-    Schweiz: [
-      'Aargau',
-      'Appenzell Ausserrhoden',
-      'Appenzell Innerrhoden',
-      'Basel-Landschaft',
-      'Basel-Stadt',
-      'Bern',
-      'Freiburg',
-      'Genf',
-      'Glarus',
-      'Graubünden',
-      'Jura',
-      'Luzern',
-      'Neuenburg',
-      'Nidwalden',
-      'Obwalden',
-      'Schaffhausen',
-      'Schwyz',
-      'Solothurn',
-      'St. Gallen',
-      'Thurgau',
-      'Tessin',
-      'Uri',
-      'Waadt',
-      'Wallis',
-      'Zug',
-      'Zürich',
-    ],
-  };
-  countries = signal([
-    { code: 'Deutschland', name: 'Deutschland' },
-    { code: 'Österreich', name: 'Österreich' },
-    { code: 'Schweiz', name: 'Schweiz' },
-  ]);
-
-  days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
-  months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+  readonly days = FORM_DAYS;
+  readonly months = FORM_MONTHS;
+  readonly countries = signal(COUNTRIES); // Bleibt das gewohnte Signal für dein HTML
 
   formModel = signal<AddressFormModel>({
     firstName: '',
@@ -169,8 +106,9 @@ export class AddressFormComponent implements OnInit {
   // Dieses Signal berechnet die verfügbaren Bundesländer jedes Mal neu, wenn sich das Land ändert!
   filteredStates = computed(() => {
     const selectedCountry = this.formModel().country;
-    return this.statesPerCountry[selectedCountry] || [];
+    return STATES_PER_COUNTRY[selectedCountry] || [];
   });
+
   // Berechnet den Tag live und fängt Strings sowie Date-Objekte gleichermaßen ab
   readonly selectedDay = computed(() => {
     const birthdayDate = this.formModel().birthdayDate;
@@ -190,7 +128,6 @@ export class AddressFormComponent implements OnInit {
     if (isNaN(date.getTime())) return '';
     return String(date.getMonth() + 1).padStart(2, '0');
   });
-
 
   // Dynamischer Text für das Hauptlabel
   birthdayLabel = computed(() => {
