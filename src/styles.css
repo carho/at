@@ -12,3 +12,43 @@ thead tr.bg-secondary select:focus {
 }
 
 /* Hier können deine bisherigen globalen Styles stehen bleiben */
+/* Roter Rahmen, wenn das umschließende Form-Field einen Fehler meldet */
+app-form-field.has-error input,
+app-form-field.has-error select,
+app-form-field.has-error textarea {
+  border-color: #dc3545 !important; /* Nutzt das exakt gleiche Rot deiner Fehlermeldung */
+}
+
+/* Roter Fokus-Effekt beim Bearbeiten eines fehlerhaften Feldes */
+app-form-field.has-error input:focus,
+app-form-field.has-error select:focus,
+app-form-field.has-error textarea:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25) !important; /* Roter statt blauer Schatten */
+}
+/* Erhöht die Sichtbarkeit der Rahmen für alle gängigen Formularfelder */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+select,
+textarea {
+  /* 2px Stärke und ein gut sichtbares, mittleres Grau (statt des blassen Standard-Graus) */
+  border: 2px solid #707070 !important;
+  /* Leicht abgerundete Ecken für ein modernes Design */
+  border-radius: 4px;
+  /* Sanfter Übergang beim Anklicken des Feldes */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Zustand, wenn der Nutzer in das Feld klickt (Fokus) */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+select:focus,
+textarea:focus {
+  /* Der Rahmen färbt sich in ein klares, kontrastreiches Blau */
+  border-color: #0d6efd !important;
+  /* Ein leichter, blauer Schatten verstärkt den visuellen Fokus */
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25) !important;
+  outline: none;
+}

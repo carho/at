@@ -3,6 +3,9 @@ import { Component, input, computed } from '@angular/core';
 @Component({
   selector: 'app-form-field',
   standalone: true,
+  host: {
+    '[class.has-error]': 'showError()', // Setzt die CSS-Klasse reaktiv
+  },
   template: `
     <div class="form-group">
       <label>{{ labelText() }}</label>
