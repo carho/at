@@ -7,6 +7,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormFieldComponent } from '../../directives/form-field.component.';
 import { germanZipCode, countryDependentZipCode } from '../../validators/zip-code.validator';
 import { validBirthday } from '../../validators/birthday.validator';
+// NEU: Angular Material Imports
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 
 interface AddressFormModel {
   firstName: string;
@@ -30,7 +35,19 @@ interface AddressFormModel {
 @Component({
   selector: 'app-address-form',
   standalone: true,
-  imports: [RouterLink, FormField, FormFieldComponent],
+  imports: [
+    RouterLink,
+    FormField,
+    FormFieldComponent,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+  ],
+  providers: [
+    // NEU: Deutsches Datumsformat (TT.MM.JJJJ) erzwingen
+    { provide: MAT_DATE_LOCALE, useValue: 'de-DE' },
+    provideNativeDateAdapter(),
+  ],
   templateUrl: './address-form.component.html',
 })
 export class AddressFormComponent implements OnInit {
@@ -124,7 +141,7 @@ export class AddressFormComponent implements OnInit {
     category: 'Personal',
     birthdayDate: '',
     hideYear: false,
-    birthdayDay: '',   // Initial leer
+    birthdayDay: '', // Initial leer
     birthdayMonth: '', // Initial leer
   });
 
@@ -154,29 +171,26 @@ export class AddressFormComponent implements OnInit {
     const selectedCountry = this.formModel().country;
     return this.statesPerCountry[selectedCountry] || [];
   });
-  // Berechnet den Tag live und erzwingt das zweistellige Format (z.B. "05" statt "5")
+  // Berechnet den Tag live und fängt Strings sowie Date-Objekte gleichermaßen ab
   readonly selectedDay = computed(() => {
     const birthdayDate = this.formModel().birthdayDate;
     if (!birthdayDate) return '';
-    const parts = birthdayDate.split('-');
-    if (parts.length !== 3) return '';
 
-    // Konvertiert den Text in eine Zahl und fügt bei Bedarf die führende Null hinzu
-    const dayNum = parseInt(parts[2], 10);
-    return isNaN(dayNum) ? '' : String(dayNum).padStart(2, '0');
+    const date = new Date(birthdayDate);
+    if (isNaN(date.getTime())) return '';
+    return String(date.getDate()).padStart(2, '0');
   });
 
-  // Berechnet den Monat live und erzwingt das zweistellige Format (z.B. "08" statt "8")
+  // Berechnet den Monat live und fängt Strings sowie Date-Objekte gleichermaßen ab
   readonly selectedMonth = computed(() => {
     const birthdayDate = this.formModel().birthdayDate;
     if (!birthdayDate) return '';
-    const parts = birthdayDate.split('-');
-    if (parts.length !== 3) return '';
 
-    // Konvertiert den Text in eine Zahl und fügt bei Bedarf die führende Null hinzu
-    const monthNum = parseInt(parts[1], 10);
-    return isNaN(monthNum) ? '' : String(monthNum).padStart(2, '0');
+    const date = new Date(birthdayDate);
+    if (isNaN(date.getTime())) return '';
+    return String(date.getMonth() + 1).padStart(2, '0');
   });
+
 
   // Dynamischer Text für das Hauptlabel
   birthdayLabel = computed(() => {
@@ -193,7 +207,7 @@ export class AddressFormComponent implements OnInit {
     this.formModel.update((m) => ({
       ...m,
       birthdayDay: day,
-      birthdayDate: `2000-${currentMonth}-${day}`
+      birthdayDate: `2000-${currentMonth}-${day}`,
     }));
     this.addressForm.birthdayDate().markAsDirty();
   }
@@ -203,8 +217,27 @@ export class AddressFormComponent implements OnInit {
     this.formModel.update((m) => ({
       ...m,
       birthdayMonth: month,
-      birthdayDate: `2000-${month}-${currentDay}`
+      birthdayDate: `2000-${month}-${currentDay}`,
     }));
+    this.addressForm.birthdayDate().markAsDirty();
+  }
+  // Synchronisiert die Kalendereingabe als standardisierten String zurück ins Modell
+  onDateChange(event: any): void {
+    if (event.value) {
+      const date = new Date(event.value);
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        this.formModel.update((m) => ({
+          ...m,
+          birthdayDate: `${year}-${month}-${day}`,
+          birthdayDay: day,
+          birthdayMonth: month,
+        }));
+      }
+    }
     this.addressForm.birthdayDate().markAsDirty();
   }
 
@@ -252,8 +285,8 @@ export class AddressFormComponent implements OnInit {
           category: (data.category as 'Personal' | 'Work' | 'Other') || 'Personal',
           birthdayDate: bDayDate,
           hideYear: bDayHideYear,
-          birthdayDay: extractedDay,   // Jetzt nativ im Signal-Formular hinterlegt
-          birthdayMonth: extractedMonth // Jetzt nativ im Signal-Formular hinterlegt
+          birthdayDay: extractedDay, // Jetzt nativ im Signal-Formular hinterlegt
+          birthdayMonth: extractedMonth, // Jetzt nativ im Signal-Formular hinterlegt
         });
       }
     }

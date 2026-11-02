@@ -112,7 +112,20 @@
         </div>
       </div>
     } @else {
-      <input type="date" class="form-control" [formField]="addressForm.birthdayDate" (change)="addressForm.birthdayDate().markAsDirty()" />
+      <!-- ZUSTAND NEU: Angular Material Kalender mit reaktiver String-Synchronisation -->
+      <div class="material-datepicker-wrapper">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <input
+            matInput
+            [matDatepicker]="picker"
+            [formField]="addressForm.birthdayDate"
+            (dateChange)="onDateChange($event)"
+            placeholder="TT.MM.JJJJ"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker startView="multi-year"></mat-datepicker>
+        </mat-form-field>
+      </div>
     }
 
     <!-- Checkbox für Jahr ausblenden -->
