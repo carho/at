@@ -20,7 +20,7 @@ export class MerriamWebsterService {
   private http = inject(HttpClient);
 
   // URL für das Collegiate Dictionary
-  private baseUrl = 'https://www.dictionaryapi.com/api/v3/references/collegiate/json/';
+  private baseUrl = 'https://www.dictionaryapi.com/api/v3/references/collegiate/json';
   // Ersetze dies mit deinem kostenlosen Key von dictionaryapi.com
   private apiKey = '2de172aa-87af-402d-a694-6311ab2cb914';
 
