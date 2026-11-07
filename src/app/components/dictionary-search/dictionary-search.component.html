@@ -1,0 +1,66 @@
+<div class="search-container" style="padding: 20px; font-family: sans-serif;">
+  <h2>📖 Merriam-Webster Dictionary Search</h2>
+
+  <input
+    [(ngModel)]="rawSearchQuery"
+    (ngModelChange)="onInputChange($event)"
+    placeholder="Search for an English word..."
+    style="padding: 10px; width: 300px; font-size: 16px; margin-bottom: 20px;"
+  />
+
+  <!-- Ladeindikator -->
+  @if (dictionaryResource.isLoading()) {
+    <p style="color: #666;">Searching definitions...</p>
+  }
+
+  <!-- Fehlerbehandlung -->
+  @if (dictionaryResource.error()) {
+    <p style="color: red;">Error fetching data from API.</p>
+  }
+
+  <!-- Ergebnisse darstellen -->
+  @if (dictionaryResource.value(); as entries) {
+    <div class="results">
+
+      <!-- Überprüfung: Haben wir echte Einträge (Objekte) oder nur Vorschläge (Strings)? -->
+      @if (entries.length > 0 && isString(entries[0])) {
+        <div style="background: #f0f4f8; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+          <p style="margin: 0 0 5px 0; font-weight: bold; color: #555;">Did you mean?</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            @for (suggestion of entries; track suggestion) {
+              <button
+                (click)="selectSuggestion(suggestion)"
+                style="background: white; border: 1px solid #ccc; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                {{ suggestion }}
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
+        <!-- Echte Definitionen rendern mit Absicherung gegen 'undefined' Eigenschaften -->
+        @for (entry of entries; track entry?.meta?.uuid ?? $index) {
+          <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+            <h3 style="margin: 0 0 5px 0; color: #0275d8;">
+              {{ entry?.meta?.id || 'Unknown' }}
+              @if (entry?.fl) {
+                <span style="font-weight: normal; font-size: 14px; color: #666; font-style: italic;">
+                  ({{ entry.fl }})
+                </span>
+              }
+            </h3>
+
+            <ol style="margin: 5px 0;">
+              @for (def of entry?.shortdef; track def) {
+                <li style="margin-bottom: 3px;">{{ def }}</li>
+              }
+            </ol>
+          </div>
+        } @empty {
+          @if (debouncedSearchQuery()) {
+            <p>No definitions found for "{{ debouncedSearchQuery() }}".</p>
+          }
+        }
+      }
+    </div>
+  }
+</div>
