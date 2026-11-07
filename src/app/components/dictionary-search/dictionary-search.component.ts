@@ -1,44 +1,37 @@
-import { Component, signal, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MerriamWebsterService } from '../../services/merriam-webster.service'; // Pfad prüfen!
+import { Component, inject, signal, computed } from '@angular/core';
+import { form, FormField, debounce } from '@angular/forms/signals';
+import { MerriamWebsterService } from '../../services/merriam-webster.service';
 
 @Component({
   selector: 'app-dictionary-search',
   standalone: true,
-  imports: [FormsModule],
-  templateUrl: './dictionary-search.component.html', // Verweis auf die externe HTML-Datei
+  imports: [FormField],
+  templateUrl: './dictionary-search.component.html',
 })
 export class DictionarySearchComponent {
   private dictionaryService = inject(MerriamWebsterService);
 
-  protected rawSearchQuery = signal<string>('');
-  protected debouncedSearchQuery = signal<string>('');
-  protected dictionaryResource = this.dictionaryService.getDefinitions(this.debouncedSearchQuery);
+  // Array für den Template-Scope bereitstellen
+  protected readonly Array = Array;
 
-  private timeoutId: any;
+  protected searchModel = signal({
+    query: '',
+  });
 
-  onInputChange(value: string) {
-    this.rawSearchQuery.set(value);
+  protected searchForm = form(this.searchModel, (path) => {
+    debounce(path.query, 2000);
+  });
 
-    if (this.timeoutId) clearTimeout(this.timeoutId);
+  // KORREKTUR TS2345: Da dein Service ein echtes 'Signal<string>' erwartet,
+  // wandeln wir den Wert des Form-Feldes per computed() in ein reines String-Signal um.
+  protected searchSignal = computed(() => this.searchForm.query().value());
 
-    this.timeoutId = setTimeout(() => {
-      this.debouncedSearchQuery.set(value);
-    }, 2000);
-  }
+  protected dictionaryResource = this.dictionaryService.getDefinitions(this.searchSignal);
 
-  // Hilfsmethode für das Template, um API-Vorschläge (Strings) zu identifizieren
-  // Hilfsmethode für das Template, um API-Vorschläge (Strings) zu identifizieren
-  protected isString(val: any): boolean {
-    // Wenn val ein Array ist, prüfen wir, ob das erste Element ein reiner Text (string) ist
-    return Array.isArray(val) && val.length > 0 && typeof val[0] === 'string';
-  }
-
-  // Ermöglicht es dem Nutzer, auf einen Suchvorschlag zu klicken
-  protected selectSuggestion(word: any) {
+  protected selectSuggestion(word: unknown) {
     if (typeof word === 'string') {
-      this.rawSearchQuery.set(word);
-      this.debouncedSearchQuery.set(word);
+      // KORREKTUR TS2339: Erst den Feldknoten aufrufen (), dann das .value-Signal setzen!
+      this.searchForm.query().value.set(word);
     }
   }
 }
