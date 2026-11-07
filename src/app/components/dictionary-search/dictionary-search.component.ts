@@ -24,12 +24,14 @@ export class DictionarySearchComponent {
 
     this.timeoutId = setTimeout(() => {
       this.debouncedSearchQuery.set(value);
-    }, 250);
+    }, 2000);
   }
 
   // Hilfsmethode für das Template, um API-Vorschläge (Strings) zu identifizieren
+  // Hilfsmethode für das Template, um API-Vorschläge (Strings) zu identifizieren
   protected isString(val: any): boolean {
-    return typeof val === 'string';
+    // Wenn val ein Array ist, prüfen wir, ob das erste Element ein reiner Text (string) ist
+    return Array.isArray(val) && val.length > 0 && typeof val[0] === 'string';
   }
 
   // Ermöglicht es dem Nutzer, auf einen Suchvorschlag zu klicken

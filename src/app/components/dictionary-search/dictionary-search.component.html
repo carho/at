@@ -23,7 +23,7 @@
     <div class="results">
 
       <!-- Überprüfung: Haben wir echte Einträge (Objekte) oder nur Vorschläge (Strings)? -->
-      @if (entries.length > 0 && isString(entries[0])) {
+      @if (entries.length > 0 && isString(entries)) {
         <div style="background: #f0f4f8; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
           <p style="margin: 0 0 5px 0; font-weight: bold; color: #555;">Did you mean?</p>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -37,8 +37,7 @@
           </div>
         </div>
       } @else {
-        <!-- Echte Definitionen rendern mit Absicherung gegen 'undefined' Eigenschaften -->
-        @for (entry of entries; track entry?.meta?.uuid ?? $index) {
+        <!-- Echte Definitionen rendern ... -->       @for (entry of entries; track entry?.meta?.uuid ?? $index) {
           <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
             <h3 style="margin: 0 0 5px 0; color: #0275d8;">
               {{ entry?.meta?.id || 'Unknown' }}
