@@ -2,19 +2,8 @@ import { Service, inject, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { httpResource } from '@angular/common/http';
 import { API_CONFIG } from '../app.config'; // Pfad anpassen
+import { MerriamWebsterEntry, MerriamWebsterThesaurusEntry } from './interfaces';
 
-// Interface für die JSON-Struktur von Merriam-Webster
-export interface MerriamWebsterEntry {
-  meta: {
-    id: string;
-    uuid: string;
-    section: string;
-    stems: string[];
-    offensive: boolean;
-  };
-  fl: string; // Wortart (noun, verb, adjective, etc.)
-  shortdef: string[]; // Array mit Kurzdefinitionen
-}
 
 @Service() // Neuer v22+ Standard für Dependency Injection
 export class MerriamWebsterService {
@@ -31,8 +20,21 @@ export class MerriamWebsterService {
 
       // KORREKTUR: 'undefined' statt 'null' zurückgeben, damit TS2769 verschwindet
       if (!word || word.trim() === '') return undefined;
+      const { baseUrl, apiKey } = this.config.dictionary;
+      return `${baseUrl}/${encodeURIComponent(word.trim())}?key=${apiKey}`;
+    });
+  }
 
-      return `${this.config.baseUrl}/${encodeURIComponent(word.trim())}?key=${this.config.apiKey}`;
+  /**
+   * Thesaurus-Suche (Nutzt dedizierte Thesaurus-Konfiguration)
+   */
+  getSynonyms(wordSignal: Signal<string>) {
+    return httpResource<MerriamWebsterThesaurusEntry[]>(() => {
+      const word = wordSignal();
+      if (!word || word.trim() === '') return undefined;
+
+      const { baseUrl, apiKey } = this.config.thesaurus;
+      return `${baseUrl}/${encodeURIComponent(word.trim())}?key=${apiKey}`;
     });
   }
 }
