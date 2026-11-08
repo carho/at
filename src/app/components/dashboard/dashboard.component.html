@@ -1,0 +1,50 @@
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold text-dark">Workspace Hub</h1>
+    <p class="text-muted fs-5">Wählen Sie das gewünschte Modul oder Werkzeug aus.</p>
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    <!-- Karte 1: Adressbuch -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 dashboard-card" routerLink="/addresses">
+        <div class="card-body p-4 text-center">
+          <div class="fs-1 mb-3 text-primary">📇</div>
+          <h4 class="card-title fw-bold">Adressbuch</h4>
+          <p class="card-text text-muted">Verwalten Sie Kontakte, Adressen und Telefonnummern reaktiv mit Signals.</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 text-center pb-4">
+          <span class="btn btn-primary px-4 rounded-pill">Öffnen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Karte 2: Lexikon -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 dashboard-card" routerLink="/search">
+        <div class="card-body p-4 text-center">
+          <div class="fs-1 mb-3 text-info">📖</div>
+          <h4 class="card-title fw-bold">Lexikon-Suche</h4>
+          <p class="card-text text-muted">Schlagen Sie präzise Definitionen und Wortarten im Merriam-Webster Wörterbuch nach.</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 text-center pb-4">
+          <span class="btn btn-info text-white px-4 rounded-pill">Suchen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Karte 3: Thesaurus -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 dashboard-card" routerLink="/thesaurus">
+        <div class="card-body p-4 text-center">
+          <div class="fs-1 mb-3 text-success">📚</div>
+          <h4 class="card-title fw-bold">Thesaurus</h4>
+          <p class="card-text text-muted">Finden Sie im Handumdrehen treffende Synonyme und gegensätzliche Wortbedeutungen.</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 text-center pb-4">
+          <span class="btn btn-success px-4 rounded-pill">Entdecken</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
