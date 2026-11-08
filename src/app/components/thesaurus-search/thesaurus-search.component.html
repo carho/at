@@ -36,93 +36,93 @@
     <!-- Rechte Spalte: Ergebnisse & Status -->
     <div class="col-md-8">
 
-      <!-- 1. Lade-Zustand -->
-      @if (thesaurusResource.isLoading()) {
-        <div class="d-flex align-items-center justify-content-center p-5 card shadow-sm text-success">
-          <div class="spinner-border me-3" role="status"></div>
-          <strong>Suche Synonyme in Merriam-Webster...</strong>
-        </div>
-      }
-
-      <!-- 2. REPARIERTE FEHLERANZEIGE: Hört auf errorMessage(), um OnPush-Timing-Konflikte zu lösen -->
-      @if (errorMessage(); as msg) {
+      <!-- 1. Fehler-Zustand abfangen (Verhindert den Absturz von .value()) -->
+      @if (thesaurusResource.error()) {
         <app-api-error
-          [errorTitle]="errorTitle()"
-          [message]="msg"
+          [errorTitle]="errorTitle() || 'API-Fehler'"
+          [message]="errorMessage() || 'Ungültiger API-Key oder Parsing-Fehler.'"
           (retry)="thesaurusResource.reload()">
         </app-api-error>
-      }
+      } @else {
 
-      <!-- 3. Erfolgreich geladene Daten -->
-      @if (thesaurusResource.value(); as entries) {
-
-        <!-- Fall A: Keine exakten Treffer, aber API liefert alternative Vorschläge -->
-        @if (Array.isArray(entries) && entries.length > 0 && isStringArray(entries)) {
-          <div class="card border-warning shadow-sm">
-            <div class="card-header bg-warning text-dark fw-bold">🤔 Meinten Sie vielleicht?</div>
-            <div class="card-body">
-              <div class="d-flex flex-wrap gap-2">
-                @for (suggestion of entries; track suggestion) {
-                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="selectSuggestion(suggestion)">
-                    📖 {{ suggestion }}
-                  </button>
-                }
-              </div>
-            </div>
-          </div>
-
-
-        <!-- Fall B: Einträge für Synonyme/Antonyme gefunden -->
-      } @else if (Array.isArray(entries)) {
-          <div class="d-flex flex-column gap-3">
-            @for (entry of entries; track entry?.meta?.uuid ?? $index) {
-              <div class="card shadow-sm border-start border-success border-4">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-baseline border-bottom pb-2 mb-3">
-                    <h4 class="text-success mb-0 fw-bold">{{ entry?.meta?.id }}</h4>
-                    <span class="badge bg-secondary text-light px-3 py-1 rounded-pill">{{ entry.fl }}</span>
-                  </div>
-
-                  <!-- SYNONYME -->
-                  @if (entry.meta?.syns && entry.meta.syns.length > 0) {
-                    <h6 class="text-success fw-bold mb-2">Synonyme (Sinnverwandt):</h6>
-                    <div class="d-flex flex-wrap gap-2 mb-4">
-                      @for (synGroup of entry.meta.syns; track synGroup) {
-                        @for (syn of synGroup; track syn) {
-                          <button type="button" class="btn btn-outline-success btn-sm rounded-pill" (click)="selectWord(syn)">{{ syn }}</button>
-                        }
-                      }
-                    </div>
-                  }
-
-                  <!-- ANTONYME -->
-                  @if (entry.meta?.ants && entry.meta.ants.length > 0) {
-                    <h6 class="text-danger fw-bold mb-2">Antonyme (Gegenteile):</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                      @for (antGroup of entry.meta.ants; track antGroup) {
-                        @for (ant of antGroup; track ant) {
-                          <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" (click)="selectWord(ant)">{{ ant }}</button>
-                        }
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-            } @empty {
-              @if (searchForm.query().value()) {
-                <div class="card shadow-sm p-5 text-center text-muted">
-                  <h5>Keine Einträge gefunden für "{{ searchForm.query().value() }}"</h5>
-                </div>
-              }
-            }
+        <!-- 2. Lade-Zustand -->
+        @if (thesaurusResource.isLoading()) {
+          <div class="d-flex align-items-center justify-content-center p-5 card shadow-sm text-success">
+            <div class="spinner-border me-3" role="status"></div>
+            <strong>Suche Synonyme in Merriam-Webster...</strong>
           </div>
         }
-      } @else if (!thesaurusResource.isLoading() && !errorMessage()) {
-        <!-- Standardanzeige vor der ersten Eingabe -->
-        <div class="card shadow-sm p-5 text-center text-muted bg-light border-dashed">
-          <h5>Thesaurus bereit</h5>
-          <p class="small mb-0">Geben Sie links einen Begriff ein, um sprachliche Alternativen aufzudecken.</p>
-        </div>
+
+        <!-- 3. Erfolgreich geladene Daten -->
+        @if (thesaurusResource.value(); as entries) {
+
+          <!-- Fall A: Keine exakten Treffer, aber API liefert alternative Vorschläge -->
+          @if (Array.isArray(entries) && entries.length > 0 && isStringArray(entries)) {
+            <div class="card border-warning shadow-sm">
+              <div class="card-header bg-warning text-dark fw-bold">🤔 Meinten Sie vielleicht?</div>
+              <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                  @for (suggestion of entries; track suggestion) {
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="selectSuggestion(suggestion)">
+                      📖 {{ suggestion }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Fall B: Einträge für Synonyme/Antonyme gefunden -->
+          } @else if (Array.isArray(entries)) {
+            <div class="d-flex flex-column gap-3">
+              @for (entry of entries; track entry?.meta?.uuid ?? $index) {
+                <div class="card shadow-sm border-start border-success border-4">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-baseline border-bottom pb-2 mb-3">
+                      <h4 class="text-success mb-0 fw-bold">{{ entry?.meta?.id }}</h4>
+                      <span class="badge bg-secondary text-light px-3 py-1 rounded-pill">{{ entry.fl }}</span>
+                    </div>
+
+                    <!-- SYNONYME -->
+                    @if (entry.meta?.syns && entry.meta.syns.length > 0) {
+                      <h6 class="text-success fw-bold mb-2">Synonyme (Sinnverwandt):</h6>
+                      <div class="d-flex flex-wrap gap-2 mb-4">
+                        @for (synGroup of entry.meta.syns; track synGroup) {
+                          @for (syn of synGroup; track syn) {
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill" (click)="selectWord(syn)">{{ syn }}</button>
+                          }
+                        }
+                      </div>
+                    }
+
+                    <!-- ANTONYME -->
+                    @if (entry.meta?.ants && entry.meta.ants.length > 0) {
+                      <h6 class="text-danger fw-bold mb-2">Antonyme (Gegenteile):</h6>
+                      <div class="d-flex flex-wrap gap-2">
+                        @for (antGroup of entry.meta.ants; track antGroup) {
+                          @for (ant of antGroup; track ant) {
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" (click)="selectWord(ant)">{{ ant }}</button>
+                          }
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                @if (searchForm.query().value()) {
+                  <div class="card shadow-sm p-5 text-center text-muted">
+                    <h5>Keine Einträge gefunden für "{{ searchForm.query().value() }}"</h5>
+                  </div>
+                }
+              }
+            </div>
+          }
+        } @else if (!thesaurusResource.isLoading()) {
+          <!-- Standardanzeige vor der ersten Eingabe -->
+          <div class="card shadow-sm p-5 text-center text-muted bg-light border-dashed">
+            <h5>Thesaurus bereit</h5>
+            <p class="small mb-0">Geben Sie links einen Begriff ein, um sprachliche Alternativen aufzudecken.</p>
+          </div>
+        }
       }
     </div>
 
