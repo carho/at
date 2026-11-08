@@ -1,65 +1,32 @@
-import {
-  Component,
-  inject,
-  signal,
-  computed,
-  ChangeDetectionStrategy,
-  effect,
-} from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { form, debounce, FormField } from '@angular/forms/signals';
+import { FormField } from '@angular/forms/signals';
 import { MerriamWebsterService } from '../../services/merriam-webster.service';
 import { FormFieldComponent } from '../../directives/form-field.component';
+import { BaseSearchDirective } from '../base-search.directive';
+import { ApiErrorComponent } from '../api-error/api-error.component';
+
 
 @Component({
   selector: 'app-thesaurus-search',
   standalone: true,
-  imports: [CommonModule, FormFieldComponent, FormField],
+  imports: [CommonModule, FormFieldComponent, FormField, ApiErrorComponent],
   templateUrl: './thesaurus-search.component.html',
   styleUrls: ['../dictionary-search/dictionary-search.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ThesaurusSearchComponent {
+export class ThesaurusSearchComponent extends BaseSearchDirective {
   private dictionaryService = inject(MerriamWebsterService);
-  protected readonly Array = Array;
 
-  protected searchHistory = signal<string[]>([]);
-  protected searchModel = signal({ query: '' });
-
-  protected searchForm = form(this.searchModel, (path) => {
-    debounce(path.query, 2000);
-  });
-
-  protected searchSignal = computed(() => this.searchForm.query().value());
+  // Die spezifische Resource für den Thesaurus
   protected thesaurusResource = this.dictionaryService.getSynonyms(this.searchSignal);
 
-  constructor() {
-    effect(() => {
-      const word = this.searchSignal()?.trim();
-      if (word && word.length > 1 && !this.thesaurusResource.error()) {
-        this.searchHistory.update((history) => {
-          const filtered = history.filter((w) => w.toLowerCase() !== word.toLowerCase());
-          return [word, ...filtered].slice(0, 5);
-        });
-      }
-    });
+  // Implementierung der abstrakten Methode für die Basisklasse
+   override getResourceError(): unknown {
+    return this.thesaurusResource.error();
   }
 
   protected isStringArray(value: unknown[]): value is string[] {
-    return typeof value[0] === 'string';
-  }
-
-  protected selectWord(word: string) {
-    this.searchForm.query().value.set(word);
-  }
-
-  protected selectSuggestion(word: unknown) {
-    if (typeof word === 'string') {
-      this.selectWord(word);
-    }
-  }
-
-  protected clearHistory() {
-    this.searchHistory.set([]);
+    return typeof value === 'string';
   }
 }

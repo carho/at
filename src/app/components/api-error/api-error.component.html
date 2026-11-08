@@ -1,0 +1,12 @@
+<div class="alert alert-danger d-flex align-items-start shadow-sm" role="alert">
+  <span class="fs-4 me-3">⚠️</span>
+  <div class="flex-grow-1">
+    <!-- REPARIERT: Keine Funktionsklammern mehr bei klassischen String-Inputs! -->
+    <h5 class="alert-heading fw-bold mb-1">{{ errorTitle }}</h5>
+    <p class="mb-0 small">{{ message }}</p>
+
+    <button type="button" class="btn btn-outline-danger btn-sm mt-2" (click)="onRetry()">
+      🔄 Erneut versuchen
+    </button>
+  </div>
+</div>

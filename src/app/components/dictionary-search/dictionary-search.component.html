@@ -1,17 +1,26 @@
 <div class="container my-4">
   <div class="row g-4">
 
-    <!-- Linke Spalte: Suchfunktion -->
+    <!-- Linke Spalte: Suchfunktion & Verlauf -->
     <div class="col-md-4">
       <div class="card shadow-sm border-2">
         <div class="card-header bg-primary text-white py-3">
-          <h5 class="mb-0 d-flex align-items-center">🔍 Begriff suchen</h5>
+          <h5 class="mb-0 d-flex align-items-center">
+            <span class="me-2">🔍</span> Begriff suchen
+          </h5>
         </div>
         <div class="card-body">
-          <p class="text-muted small">Die Suche startet automatisch nach einer kurzen Pause (Debounce).</p>
+          <p class="text-muted small">
+            Die Suche startet automatisch nach einer kurzen Pause (Debounce).
+          </p>
 
           <app-form-field labelText="Suchbegriff" [field]="searchForm.query">
-            <input type="text" [formField]="searchForm.query" placeholder="e.g. Framework..." autocomplete="off" />
+            <input
+              type="text"
+              [formField]="searchForm.query"
+              placeholder="e.g. Framework..."
+              autocomplete="off"
+            />
           </app-form-field>
 
           @if (searchHistory().length > 0) {
@@ -36,6 +45,7 @@
     <!-- Rechte Spalte: Ergebnisse & Status -->
     <div class="col-md-8">
 
+      <!-- 1. Lade-Zustand -->
       @if (dictionaryResource.isLoading()) {
         <div class="d-flex align-items-center justify-content-center p-5 card shadow-sm text-primary">
           <div class="spinner-border me-3" role="status"></div>
@@ -43,25 +53,25 @@
         </div>
       }
 
-      <!-- Fehlerbehandlung liest direkt die Nachricht des geworfenen Fehlers aus -->
-      @if (dictionaryResource.error(); as err) {
-        <div class="alert alert-danger d-flex align-items-start shadow-sm" role="alert">
-          <span class="fs-4 me-3">⚠️</span>
-          <div>
-            <h5 class="alert-heading fw-bold mb-1">Schnittstellen-Problem</h5>
-            <p class="mb-0 small">{{ $any(err).message || err }}</p>
-            <button type="button" class="btn btn-outline-danger btn-sm mt-2" (click)="dictionaryResource.reload()">
-              🔄 Erneut versuchen
-            </button>
-          </div>
-        </div>
+      <!-- 2. REPARIERTE FEHLERANZEIGE: Hört auf errorMessage(), um OnPush-Timing-Konflikte zu lösen -->
+      @if (errorMessage(); as msg) {
+
+        <app-api-error
+          [errorTitle]="errorTitle()"
+          [message]="msg"
+          (retry)="dictionaryResource.reload()">
+        </app-api-error>
       }
 
+      <!-- 3. Erfolgreich geladene Daten -->
       @if (dictionaryResource.value(); as entries) {
-        @if (Array.isArray(entries) && entries.length > 0 && typeof entries[0] === 'string') {
+
+        <!-- Fall A: Keine exakten Treffer, aber API liefert alternative Vorschläge -->
+        @if (Array.isArray(entries) && entries.length > 0 && isStringArray(entries)) {
           <div class="card border-warning shadow-sm">
             <div class="card-header bg-warning text-dark fw-bold">🤔 Meinten Sie vielleicht?</div>
             <div class="card-body">
+              <p class="card-text text-muted small">Es wurden keine exakten Treffer gefunden. Wählen Sie einen der folgenden Vorschläge:</p>
               <div class="d-flex flex-wrap gap-2">
                 @for (suggestion of entries; track suggestion) {
                   <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="selectSuggestion(suggestion)">
@@ -71,8 +81,10 @@
               </div>
             </div>
           </div>
-        }
-        @else if (Array.isArray(entries)) {
+
+
+        <!-- Fall B: Strukturierte Definitionen gefunden -->
+      } @else if (Array.isArray(entries)) {
           <div class="d-flex flex-column gap-3">
             @for (entry of entries; track entry?.meta?.uuid ?? $index) {
               <div class="card shadow-sm border-start border-primary border-4">
@@ -92,6 +104,7 @@
                 </div>
               </div>
             } @empty {
+              <!-- Fall C: Suchlauf gestartet, aber leeres Ergebnis -->
               @if (searchForm.query().value()) {
                 <div class="card shadow-sm p-5 text-center text-muted">
                   <h5>Keine Definitionen gefunden für "{{ searchForm.query().value() }}"</h5>
@@ -100,7 +113,8 @@
             }
           </div>
         }
-      } @else if (!dictionaryResource.isLoading() && !dictionaryResource.error()) {
+      } @else if (!dictionaryResource.isLoading() && !errorMessage()) {
+        <!-- Standardanzeige vor der ersten Eingabe -->
         <div class="card shadow-sm p-5 text-center text-muted bg-light border-dashed">
           <h5>Bereit für die Suche</h5>
           <p class="small mb-0">Tippen Sie links ein englisches Wort ein, um Definitionen zu laden.</p>
