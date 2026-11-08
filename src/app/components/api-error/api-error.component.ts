@@ -19,7 +19,15 @@ export class ApiErrorComponent {
   @Input({ required: true }) message!: string;
 
   @Output() retry = new EventEmitter<void>();
-
+  constructor() {
+console.log('[Lifecycle] Komponente für Fehler')  }
+  ngOnInit() {
+    // Richtig: Loggt, sobald die Komponente startbereit und die Variable verfügbar ist
+    // Bei Signals rufst du die Variable wie eine Funktion auf: ()
+    console.log(
+      `[Lifecycle] Komponente für Fehler "${this.message}" , "${this.errorTitle}" wurde initialisiert.`,
+    );
+  }
   protected onRetry() {
     this.retry.emit();
   }
