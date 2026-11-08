@@ -14,34 +14,35 @@ export abstract class BaseSearchDirective {
 
   searchSignal = computed(() => this.searchForm.query().value());
 
+  // Abstrakte Schnittstelle zu den jeweiligen Komponenten-Resources
   abstract getResourceError(): unknown;
 
-  // Bestimmt den passenden Titel für das UI
+  // Zentraler UI-Titel basierend auf der Fehlermeldung
   errorTitle = computed(() => {
     const msg = this.errorMessage();
     if (!msg) return 'Fehler';
 
     if (
-      msg.indexOf('Ungültiger') !== -1 ||
+      msg.indexOf('API-Schlüssel') !== -1 ||
       msg.indexOf('API-Limit') !== -1 ||
-      msg.indexOf('gefunden') !== -1
+      msg.indexOf('Parsing-Fehler') !== -1
     ) {
       return 'Konfigurations-Fehler';
     }
-    if (msg.indexOf('Keine Internetverbindung') !== -1) {
+    if (msg.indexOf('Internetverbindung') !== -1) {
       return 'Verbindungs-Problem';
     }
     return 'Unerwarteter Fehler';
   });
 
-  // REPARIERT: Extrahiert den HTTP-Status browsersicher ohne "instanceof"
+  // Zentraler Fehler-Parser für die Angular Resource API
   errorMessage = computed(() => {
     const error = this.getResourceError();
     if (!error) return null;
 
     const errObj = error as any;
 
-    // Ermittelt den Statuscode flexibel aus allen Ebenen der httpResource-Fehlerkapselung
+    // 1. Extraktion des HTTP-Statuscodes aus allen denkbaren Kapselungsebenen
     const status =
       errObj?.status !== undefined
         ? errObj.status
@@ -53,7 +54,12 @@ export abstract class BaseSearchDirective {
               ? errObj.cause.status
               : undefined;
 
-    const rawMessage = errObj?.message || errObj?.error?.message || '';
+    const rawMessage = errObj?.message || errObj?.error?.message || errObj?.cause?.message || '';
+
+    // 2. Abfangen von HTTP-Parsing-Fehlern (z.B. reiner Text "Invalid API key" statt JSON)
+    if (rawMessage.indexOf('parsing') !== -1 || rawMessage.indexOf('Unexpected token') !== -1) {
+      return 'API-Antwort fehlerhaft (Parsing-Fehler). Bitte überprüfe die Gültigkeit deines API-Schlüssels.';
+    }
 
     if (status !== undefined) {
       if (status === 0) {
@@ -72,7 +78,7 @@ export abstract class BaseSearchDirective {
       }
     }
 
-    // Filtert das fehlerhafte [object Object] aus
+    // 3. Fallback für rohe Textfehler
     if (errObj?.message && errObj.message.indexOf('[object Object]') === -1) {
       return errObj.message;
     }
@@ -94,9 +100,11 @@ export abstract class BaseSearchDirective {
   protected selectWord(word: string) {
     this.searchForm.query().value.set(word);
   }
+
   protected selectSuggestion(word: unknown) {
     if (typeof word === 'string') this.selectWord(word);
   }
+
   protected clearHistory() {
     this.searchHistory.set([]);
   }

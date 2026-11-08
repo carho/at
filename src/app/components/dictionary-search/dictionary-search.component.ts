@@ -17,16 +17,13 @@ import { ApiErrorComponent } from '../api-error/api-error.component';
 export class DictionarySearchComponent extends BaseSearchDirective {
   private dictionaryService = inject(MerriamWebsterService);
 
-  // Die spezifische Resource für das Lexikon
   protected dictionaryResource = this.dictionaryService.getDefinitions(this.searchSignal);
 
-  // Implementierung der abstrakten Methode für die Basisklasse
   override getResourceError(): unknown {
     return this.dictionaryResource.error();
   }
 
-  // HIER DIESE METHODE ERGÄNZEN:
   protected isStringArray(value: unknown[]): value is string[] {
-    return typeof value[0] === 'string';
+    return value.length > 0 && typeof value[0] === 'string';
   }
 }
