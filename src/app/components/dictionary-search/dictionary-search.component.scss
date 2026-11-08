@@ -1,0 +1,22 @@
+/* Gestrichelter Rahmen für die "Bereit"-Anzeige */
+.border-dashed {
+  border: 2px dashed #ced4da !important;
+  background-color: #fafafa;
+}
+
+/* Hover-Effekt für die Wort-Vorschläge */
+.btn-outline-secondary.rounded-pill {
+  transition: all 0.2s ease-in-out;
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+  }
+}
+
+/* Suchfeld-Layout an globale App-Stile anpassen */
+input[type="text"] {
+  border: 2px solid #ced4da;
+  &:focus {
+    border-color: #0d6efd !important;
+  }
+}

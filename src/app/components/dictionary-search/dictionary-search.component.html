@@ -1,45 +1,124 @@
-<h2>📖 Merriam-Webster Dictionary Search</h2>
+<div class="container my-4">
+  <div class="row g-4">
 
-<input
-  type="text"
-  [formField]="searchForm.query"
-  placeholder="Suchbegriff eingeben..."
-/>
+    <!-- Linke Spalte: Suchfunktion -->
+    <div class="col-md-4">
+      <div class="card shadow-sm border-2">
+        <div class="card-header bg-primary text-white py-3">
+          <h5 class="mb-0 d-flex align-items-center">
+            <span class="me-2">🔍</span> Begriff suchen
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small">
+            Geben Sie ein englisches Wort ein. Die Suche startet automatisch nach einer kurzen Pause (Debounce).
+          </p>
 
-@if (dictionaryResource.isLoading()) {
-  <p>Searching definitions...</p>
-}
+          <!-- Übergabe der Inputs exakt wie von deiner FormFieldComponent gefordert -->
+          <app-form-field
+            labelText="Suchbegriff"
+            [field]="searchForm.query"
+          >
+            <!-- Input-Wert an das Signal koppeln, damit Eingaben registriert werden -->
+            <input
+              type="text"
+              placeholder="e.g. Framework, Science..."
+              autocomplete="off"
+              [value]="searchForm.query().value()"
+              (input)="searchForm.query().value.set($any($event.target).value)"
+            />
+          </app-form-field>
+        </div>
+      </div>
+    </div>
 
-@if (dictionaryResource.error()) {
-  <p>Error fetching data from API.</p>
-}
+    <!-- Rechte Spalte: Ergebnisse & Status -->
+    <div class="col-md-8">
 
-@if (dictionaryResource.value(); as entries) {
-  <!-- Array ist jetzt im Template-Scope bekannt -->
-  @if (Array.isArray(entries) && entries.length > 0 && typeof entries[0] === 'string') {
-    <p>Did you mean?</p>
-    <ul>
-      @for (suggestion of entries; track suggestion) {
-        <li>
-          <button (click)="selectSuggestion(suggestion)">
-            {{ suggestion }}
-          </button>
-        </li>
+      @if (dictionaryResource.isLoading()) {
+        <div class="d-flex align-items-center justify-content-center p-5 card shadow-sm text-primary">
+          <div class="spinner-border me-3" role="status"></div>
+          <strong>Suche Definitionen in Merriam-Webster...</strong>
+        </div>
       }
-    </ul>
-  } @else if (Array.isArray(entries)) {
-    @for (entry of entries; track entry?.meta?.uuid ?? $index) {
-      <h3>{{ entry?.meta?.id || 'Unknown' }} @if (entry?.fl) { ({{ entry.fl }}) }</h3>
 
-      @for (def of entry?.shortdef; track def) {
-        <ol>
-          <li>{{ def }}</li>
-        </ol>
+      @if (dictionaryResource.error()) {
+        <div class="alert alert-danger d-flex align-items-center shadow-sm" role="alert">
+          <span class="fs-4 me-3">⚠️</span>
+          <div>
+            <strong>Fehler beim Abrufen der Daten.</strong> Bitte überprüfen Sie Ihre Internetverbindung oder den API-Schlüssel.
+          </div>
+        </div>
       }
-    } @empty {
-      @if (searchForm.query()) {
-        <p>No definitions found for "{{ searchForm.query() }}".</p>
+
+      @if (dictionaryResource.value(); as entries) {
+
+        @if (Array.isArray(entries) && entries.length > 0 && typeof entries[0] === 'string') {
+          <div class="card border-warning shadow-sm">
+            <div class="card-header bg-warning text-dark fw-bold">
+              🤔 Meinten Sie vielleicht?
+            </div>
+            <div class="card-body">
+              <p>Es wurden keine exakten Treffer gefunden. Wählen Sie einen der folgenden Vorschläge:</p>
+              <div class="d-flex flex-wrap gap-2">
+                @for (suggestion of entries; track suggestion) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm rounded-pill"
+                    (click)="selectSuggestion(suggestion)">
+                    📖 {{ suggestion }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        @else if (Array.isArray(entries)) {
+          <div class="d-flex flex-column gap-3">
+            @for (entry of entries; track entry?.meta?.uuid ?? $index) {
+              <div class="card shadow-sm border-start border-primary border-4">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-baseline border-bottom pb-2 mb-3">
+                    <h4 class="text-primary mb-0 fw-bold">
+                      {{ entry?.meta?.id || 'Unbekannt' }}
+                    </h4>
+                    @if (entry?.fl) {
+                      <span class="badge bg-secondary text-light fs-6 px-3 py-1 rounded-pill">
+                        {{ entry.fl }}
+                      </span>
+                    }
+                  </div>
+
+                  <h6 class="text-muted fw-semibold mb-2">Definitionen:</h6>
+                  <ol class="list-group list-group-numbered list-group-flush">
+                    @for (def of entry?.shortdef; track def) {
+                      <li class="list-group-item bg-transparent border-0 ps-0 text-dark">
+                        {{ def }}
+                      </li>
+                    }
+                  </ol>
+                </div>
+              </div>
+            } @empty {
+              @if (searchForm.query().value()) {
+                <div class="card shadow-sm p-5 text-center text-muted">
+                  <span class="fs-1 mb-2">🤷‍♂️</span>
+                  <h5>Keine Definitionen gefunden für "{{ searchForm.query().value() }}"</h5>
+                  <p class="small mb-0">Überprüfen Sie die Schreibweise oder versuchen Sie ein anderes Wort.</p>
+                </div>
+              }
+            }
+          </div>
+        }
+      } @else if (!dictionaryResource.isLoading()) {
+        <div class="card shadow-sm p-5 text-center text-muted bg-light border-dashed">
+          <span class="fs-1 mb-2">📚</span>
+          <h5>Bereit für die Suche</h5>
+          <p class="small mb-0">Tippen Sie links ein englisches Wort ein, um Echtzeit-Definitionen zu laden.</p>
+        </div>
       }
-    }
-  }
-}
+
+    </div>
+  </div>
+</div>

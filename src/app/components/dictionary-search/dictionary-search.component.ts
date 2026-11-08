@@ -1,12 +1,16 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { form, FormField, debounce } from '@angular/forms/signals';
 import { MerriamWebsterService } from '../../services/merriam-webster.service';
+import { FormFieldComponent } from '../../directives/form-field.component';
+
 
 @Component({
   selector: 'app-dictionary-search',
   standalone: true,
-  imports: [FormField],
+  imports: [FormFieldComponent],
   templateUrl: './dictionary-search.component.html',
+  styleUrls: ['./dictionary-search.component.scss'],
+
 })
 export class DictionarySearchComponent {
   private dictionaryService = inject(MerriamWebsterService);

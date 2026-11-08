@@ -1,6 +1,7 @@
 import { Service, inject, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { httpResource } from '@angular/common/http';
+import { API_CONFIG } from '../app.config'; // Pfad anpassen
 
 // Interface für die JSON-Struktur von Merriam-Webster
 export interface MerriamWebsterEntry {
@@ -18,11 +19,7 @@ export interface MerriamWebsterEntry {
 @Service() // Neuer v22+ Standard für Dependency Injection
 export class MerriamWebsterService {
   private http = inject(HttpClient);
-
-  // URL für das Collegiate Dictionary
-  private baseUrl = 'https://www.dictionaryapi.com/api/v3/references/collegiate/json';
-  // Ersetze dies mit deinem kostenlosen Key von dictionaryapi.com
-  private apiKey = '2de172aa-87af-402d-a694-6311ab2cb914';
+  private config = inject(API_CONFIG);
 
   /**
    * Holt Definitionen basierend auf einem Wort-Signal.
@@ -35,7 +32,7 @@ export class MerriamWebsterService {
       // KORREKTUR: 'undefined' statt 'null' zurückgeben, damit TS2769 verschwindet
       if (!word || word.trim() === '') return undefined;
 
-      return `${this.baseUrl}/${encodeURIComponent(word.trim())}?key=${this.apiKey}`;
+      return `${this.config.baseUrl}/${encodeURIComponent(word.trim())}?key=${this.config.apiKey}`;
     });
   }
 }

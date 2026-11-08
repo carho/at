@@ -4,7 +4,7 @@ import { form, FormField, required, email, disabled } from '@angular/forms/signa
 import { AddressService } from '../../services/address.service';
 import { NewAddress } from '../../models/address.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormFieldComponent } from '../../directives/form-field.component.';
+import { FormFieldComponent } from '../../directives/form-field.component';
 import { germanZipCode, countryDependentZipCode } from '../../validators/zip-code.validator';
 import { validBirthday } from '../../validators/birthday.validator';
 // NEU: Angular Material Imports
