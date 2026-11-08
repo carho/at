@@ -1,17 +1,17 @@
 <div class="container my-4">
   <div class="row g-4">
+
+    <!-- Linke Spalte -->
     <div class="col-md-4">
       <div class="card shadow-sm border-2">
         <div class="card-header bg-success text-white py-3">
-          <h5 class="mb-0 d-flex align-items-center">
-            <span class="me-2">📚</span> Thesaurus (Synonyme)
-          </h5>
+          <h5 class="mb-0 d-flex align-items-center">📚 Thesaurus (Synonyme)</h5>
         </div>
         <div class="card-body">
           <p class="text-muted small">Finden Sie sinnverwandte (Synonyme) und gegensätzliche Wörter (Antonyme).</p>
 
           <app-form-field labelText="Wort eingeben" [field]="searchForm.query">
-            <input type="text" [formField]="searchForm.query" placeholder="e.g. beautiful, fast..." autocomplete="off" />
+            <input type="text" [formField]="searchForm.query" placeholder="e.g. beautiful..." autocomplete="off" />
           </app-form-field>
 
           @if (searchHistory().length > 0) {
@@ -22,7 +22,9 @@
               </div>
               <div class="d-flex flex-wrap gap-2">
                 @for (hWord of searchHistory(); track hWord) {
-                  <button type="button" class="btn btn-light btn-sm rounded-pill border history-badge" (click)="selectWord(hWord)">⏱️ {{ hWord }}</button>
+                  <button type="button" class="btn btn-light btn-sm rounded-pill border history-badge" (click)="selectWord(hWord)">
+                    ⏱️ {{ hWord }}
+                  </button>
                 }
               </div>
             </div>
@@ -31,6 +33,7 @@
       </div>
     </div>
 
+    <!-- Rechte Spalte -->
     <div class="col-md-8">
       @if (thesaurusResource.isLoading()) {
         <div class="d-flex align-items-center justify-content-center p-5 card shadow-sm text-success">
@@ -39,27 +42,35 @@
         </div>
       }
 
-      @if (thesaurusResource.error()) {
-        <div class="alert alert-danger shadow-sm">⚠️ Fehler beim Abrufen der Thesaurus-Daten.</div>
+      <!-- Fehlerbehandlung liest direkt die Nachricht des geworfenen Fehlers aus -->
+      @if (thesaurusResource.error(); as err) {
+        <div class="alert alert-danger d-flex align-items-start shadow-sm" role="alert">
+          <span class="fs-4 me-3">⚠️</span>
+          <div>
+            <h5 class="alert-heading fw-bold mb-1">Schnittstellen-Problem</h5>
+            <p class="mb-0 small">{{ $any(err).message || err }}</p>
+            <button type="button" class="btn btn-outline-danger btn-sm mt-2" (click)="thesaurusResource.reload()">
+              🔄 Erneut versuchen
+            </button>
+          </div>
+        </div>
       }
 
       @if (thesaurusResource.value(); as entries) {
-
-        <!-- KORREKTUR: Prüft verlässlich, ob es sich um ein reines String-Array (Vorschläge) handelt -->
         @if (Array.isArray(entries) && entries.length > 0 && isStringArray(entries)) {
           <div class="card border-warning shadow-sm">
             <div class="card-header bg-warning text-dark fw-bold">🤔 Meinten Sie vielleicht?</div>
             <div class="card-body">
-              <p>Es wurden keine exakten Treffer gefunden. Wählen Sie einen der folgenden Vorschläge:</p>
               <div class="d-flex flex-wrap gap-2">
                 @for (suggestion of entries; track suggestion) {
-                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="selectSuggestion(suggestion)">📖 {{ suggestion }}</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="selectSuggestion(suggestion)">
+                    📖 {{ suggestion }}
+                  </button>
                 }
               </div>
             </div>
           </div>
         }
-
         @else if (Array.isArray(entries)) {
           <div class="d-flex flex-column gap-3">
             @for (entry of entries; track entry?.meta?.uuid ?? $index) {
@@ -70,7 +81,6 @@
                     <span class="badge bg-secondary text-light px-3 py-1 rounded-pill">{{ entry.fl }}</span>
                   </div>
 
-                  <!-- SYNONYME -->
                   @if (entry.meta?.syns && entry.meta.syns.length > 0) {
                     <h6 class="text-success fw-bold mb-2">Synonyme (Sinnverwandt):</h6>
                     <div class="d-flex flex-wrap gap-2 mb-4">
@@ -82,7 +92,6 @@
                     </div>
                   }
 
-                  <!-- ANTONYME -->
                   @if (entry.meta?.ants && entry.meta.ants.length > 0) {
                     <h6 class="text-danger fw-bold mb-2">Antonyme (Gegenteile):</h6>
                     <div class="d-flex flex-wrap gap-2">
@@ -97,17 +106,20 @@
               </div>
             } @empty {
               @if (searchForm.query().value()) {
-                <div class="card shadow-sm p-5 text-center text-muted"><h5>Keine Einträge gefunden für "{{ searchForm.query().value() }}"</h5></div>
+                <div class="card shadow-sm p-5 text-center text-muted">
+                  <h5>Keine Einträge gefunden für "{{ searchForm.query().value() }}"</h5>
+                </div>
               }
             }
           </div>
         }
-      } @else if (!thesaurusResource.isLoading()) {
+      } @else if (!thesaurusResource.isLoading() && !thesaurusResource.error()) {
         <div class="card shadow-sm p-5 text-center text-muted bg-light border-dashed">
           <h5>Thesaurus bereit</h5>
           <p class="small mb-0">Geben Sie links einen Begriff ein, um sprachliche Alternativen aufzudecken.</p>
         </div>
       }
     </div>
+
   </div>
 </div>

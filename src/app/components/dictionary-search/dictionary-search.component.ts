@@ -21,57 +21,41 @@ import { FormFieldComponent } from '../../directives/form-field.component';
 })
 export class DictionarySearchComponent {
   private dictionaryService = inject(MerriamWebsterService);
-
-  // Array für Typprüfungen im HTML-Template bereitstellen
   protected readonly Array = Array;
 
-  // Signal für die Historie der letzten 5 Suchbegriffe
   protected searchHistory = signal<string[]>([]);
-
-  protected searchModel = signal({
-    query: '',
-  });
+  protected searchModel = signal({ query: '' });
 
   protected searchForm = form(this.searchModel, (path) => {
-    // Optimierter Debounce auf 500ms für eine flüssige Suche
     debounce(path.query, 2000);
   });
 
-  // Wandelt den Feldwert in ein sauberes String-Signal für den Service um
   protected searchSignal = computed(() => this.searchForm.query().value());
-
-  // Bindung an die httpResource des Services
   protected dictionaryResource = this.dictionaryService.getDefinitions(this.searchSignal);
 
   constructor() {
-    // Effekt überwacht searchSignal und fügt Eingaben automatisch der Historie hinzu
     effect(() => {
       const word = this.searchSignal()?.trim();
-
-      if (word && word.length > 1) {
+      // Fügt das Wort nur der Historie hinzu, wenn kein Fehler vorliegt
+      if (word && word.length > 1 && !this.dictionaryResource.error()) {
         this.searchHistory.update((history) => {
-          // Duplikate entfernen
           const filtered = history.filter((w) => w.toLowerCase() !== word.toLowerCase());
-          // Vorne anfügen und auf 5 Einträge limitieren
           return [word, ...filtered].slice(0, 5);
         });
       }
     });
   }
 
-  // Setzt das Suchfeld auf ein Wort aus der Historie oder den API-Vorschlägen
   protected selectWord(word: string) {
     this.searchForm.query().value.set(word);
   }
 
-  // Setzt das Suchfeld auf einen unbestimmten Vorschlag (Typ-Absicherung)
   protected selectSuggestion(word: unknown) {
     if (typeof word === 'string') {
       this.selectWord(word);
     }
   }
 
-  // Verlauf leeren
   protected clearHistory() {
     this.searchHistory.set([]);
   }

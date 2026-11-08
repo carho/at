@@ -14,8 +14,6 @@ import { RouterOutlet, RouterLink } from '@angular/router';
         </a>
         <div class="navbar-nav shadow-sm">
           <a class="nav-link active" routerLink="/" routerLinkActive="active"> Übersicht </a>
-          <!-- Neuer Link zum Merriam-Webster Lexikon -->
-          <a class="nav-link" routerLink="/search" routerLinkActive="active"> 📖 Lexikon-Suche </a>
         </div>
       </div>
     </nav>

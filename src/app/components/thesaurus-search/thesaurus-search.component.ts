@@ -36,7 +36,7 @@ export class ThesaurusSearchComponent {
   constructor() {
     effect(() => {
       const word = this.searchSignal()?.trim();
-      if (word && word.length > 1) {
+      if (word && word.length > 1 && !this.thesaurusResource.error()) {
         this.searchHistory.update((history) => {
           const filtered = history.filter((w) => w.toLowerCase() !== word.toLowerCase());
           return [word, ...filtered].slice(0, 5);
@@ -45,7 +45,6 @@ export class ThesaurusSearchComponent {
     });
   }
 
-  // NEU: Hilfsfunktion zur eindeutigen Typtrennung im HTML-Template
   protected isStringArray(value: unknown[]): value is string[] {
     return typeof value[0] === 'string';
   }
