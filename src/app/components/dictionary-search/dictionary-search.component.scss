@@ -20,3 +20,23 @@ input[type="text"] {
     border-color: #0d6efd !important;
   }
 }
+
+/* Verlaufshistorie Badges */
+.history-badge {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.75rem;
+  transition: all 0.15s ease-in-out;
+  background-color: #f8f9fa;
+
+  &:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Tracking-Utility für kleinen Header im Verlauf */
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
