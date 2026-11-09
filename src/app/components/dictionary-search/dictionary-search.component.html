@@ -1,116 +1,98 @@
-<div class="container my-4">
-  <div class="row g-4">
+<div class="container-fluid mt-4">
+  <div class="row">
 
-    <!-- Linke Spalte: Suchfunktion & Verlauf -->
-    <div class="col-md-4">
-      <div class="card shadow-sm border-2">
-        <div class="card-header bg-primary text-white py-3">
-          <h5 class="mb-0 d-flex align-items-center">🔍 Begriff suchen</h5>
+    <!-- Linke Spalte: Sidebar mit Suchfeld & Verlauf -->
+    <aside class="col-md-4 col-lg-3 mb-4">
+      <div class="card p-3 shadow-sm border-0 bg-white">
+
+        <div class="form-group mb-3">
+          <label class="form-label fw-bold text-secondary small text-uppercase">Wort suchen</label>
+          <input
+            [(ngModel)]="searchQuery"
+            type="text"
+            class="form-control py-2"
+            placeholder="Suchbegriff eingeben..." />
         </div>
-        <div class="card-body">
-          <p class="text-muted small">Die Suche startet automatisch nach einer kurzen Pause (Debounce).</p>
 
-          <app-form-field labelText="Wort eingeben" [field]="searchForm.query">
-            <input type="text" [formField]="searchForm.query" placeholder="e.g. word..." autocomplete="off" />
-          </app-form-field>
-
-          @if (searchHistory().length > 0) {
-            <div class="mt-4 pt-3 border-top">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="text-secondary fw-bold mb-0 small text-uppercase">Letzte Suchbegriffe</h6>
-                <button type="button" class="btn btn-link btn-sm text-danger p-0 text-decoration-none" (click)="clearHistory()">Löschen</button>
-              </div>
-              <div class="d-flex flex-wrap gap-2">
-                @for (historyWord of searchHistory(); track historyWord) {
-                  <button type="button" class="btn btn-light btn-sm rounded-pill border history-badge" (click)="selectWord(historyWord)">
-                    ⏱️ {{ historyWord }}
-                  </button>
-                }
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-
-    <!-- Rechte Spalte: Ergebnisse & Status -->
-    <div class="col-md-8">
-
-      <!-- 1. Fehler-Zustand abfangen (Verhindert den Absturz von .value()) -->
-      @if (dictionaryResource.error()) {
-        <app-api-error
-          [errorTitle]="errorTitle() || 'API-Fehler'"
-          [message]="errorMessage() || 'Ungültiger API-Key oder Parsing-Fehler.'"
-          (retry)="dictionaryResource.reload()">
-        </app-api-error>
-      } @else {
-
-        <!-- 2. Lade-Zustand -->
-        @if (dictionaryResource.isLoading()) {
-          <div class="d-flex align-items-center justify-content-center p-5 card shadow-sm text-primary">
-            <div class="spinner-border me-3" role="status"></div>
-            <strong>Suche Definitionen in Merriam-Webster...</strong>
-          </div>
-        }
-
-        <!-- 3. Erfolgreich geladene Daten -->
-        @if (dictionaryResource.value(); as entries) {
-
-          <!-- Fall A: Keine exakten Treffer, aber API liefert alternative Vorschläge -->
-          @if (Array.isArray(entries) && entries.length > 0 && isStringArray(entries)) {
-            <div class="card border-warning shadow-sm">
-              <div class="card-header bg-warning text-dark fw-bold">🤔 Meinten Sie vielleicht?</div>
-              <div class="card-body">
-                <p class="small text-muted">Es wurden keine exakten Treffer gefunden. Wählen Sie einen der folgenden Vorschläge:</p>
-                <div class="d-flex flex-wrap gap-2">
-                  @for (suggestion of entries; track suggestion) {
-                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="selectSuggestion(suggestion)">
-                      📖 {{ suggestion }}
-                    </button>
-                  }
-                </div>
-              </div>
+        @if (searchHistory().length > 0) {
+          <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="text-uppercase text-muted small mb-0 fw-bold">Verlauf</h6>
+              <button (click)="clearHistory()" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
+                Löschen
+              </button>
             </div>
 
-            <!-- Fall B: Einträge für Definitionen gefunden -->
-          } @else if (Array.isArray(entries)) {
-            <div class="d-flex flex-column gap-3">
-              @for (entry of entries; track entry?.meta?.uuid ?? $index) {
-                <div class="card shadow-sm border-start border-primary border-4">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-baseline border-bottom pb-2 mb-3">
-                      <h4 class="text-primary mb-0 fw-bold">{{ entry?.meta?.id || 'Unbekannt' }}</h4>
-                      @if (entry?.fl) {
-                        <span class="badge bg-secondary text-light px-3 py-1 rounded-pill">{{ entry.fl }}</span>
-                      }
-                    </div>
-
-                    <h6>Definitionen:</h6>
-                    <ol class="list-group list-group-numbered list-group-flush">
-                      @for (def of entry?.shortdef; track def) {
-                        <li class="list-group-item bg-transparent border-0 ps-0">{{ def }}</li>
-                      }
-                    </ol>
-                  </div>
-                </div>
-              } @empty {
-                @if (searchForm.query().value()) {
-                  <div class="card shadow-sm p-5 text-center text-muted">
-                    <h5>Keine Definitionen gefunden für "{{ searchForm.query().value() }}"</h5>
-                  </div>
-                }
+            <div class="d-flex flex-column gap-2">
+              @for (word of searchHistory(); track word) {
+                <button
+                  (click)="selectWord(word)"
+                  class="btn btn-outline-secondary border rounded-pill text-start d-flex align-items-center w-100 py-2 px-3">
+                  <span class="me-2 text-muted">⏱</span>
+                  <span class="text-truncate">{{ word }}</span>
+                </button>
               }
             </div>
-          }
-        } @else if (!dictionaryResource.isLoading()) {
-          <!-- Standardanzeige vor der ersten Eingabe -->
-          <div class="card shadow-sm p-5 text-center text-muted bg-light border-dashed">
-            <h5>Bereit für die Suche</h5>
-            <p class="small mb-0">Tippen Sie links ein englisches Wort ein, um Definitionen zu laden.</p>
           </div>
         }
-      }
-    </div>
+
+      </div>
+    </aside>
+
+    <!-- Rechte Spalte: Inhaltsbereich -->
+    <main class="col-md-8 col-lg-9">
+      <div class="card p-4 shadow-sm border-0 bg-white h-100 min-vh-50 d-flex flex-column justify-content-center">
+
+        @if (errorMessage()) {
+          <app-api-error [errorTitle]="'Fehler'" [message]="errorMessage()!" (retry)="retrySearch()"></app-api-error>
+        }
+        @else if (!searchQuery() || searchQuery().trim().length === 0) {
+          <!-- Startbildschirm -->
+          <div class="text-center my-auto py-5 border-dashed p-4 rounded bg-light">
+            <h5 class="text-muted fw-normal">Bereit für die Suche</h5>
+            <p class="text-secondary small mb-0">Geben Sie links einen englischen Begriff ein, um Daten zu laden.</p>
+          </div>
+        }
+        @else if (isLoading()) {
+          <!-- Bootstrap Spinner -->
+          <div class="text-center my-auto py-5">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <h5 class="text-muted fw-normal">Suche läuft...</h5>
+          </div>
+        }
+        @else if (hasData()) {
+          <!-- Ergebnisanzeige -->
+          <div class="w-100 text-start">
+            @let entries = dictionaryResource.value();
+            @for (entry of entries; track entry?.meta?.uuid ?? $index) {
+              <div class="mb-4 border-bottom pb-3">
+                <h4 class="text-dark mb-1">{{ entry?.meta?.id || 'Unbekannt' }}</h4>
+                @if (entry?.fl) {
+                  <span class="badge bg-light text-secondary mb-2 border">{{ entry.fl }}</span>
+                }
+                <h6 class="text-muted mt-2 mb-1">Definitionen:</h6>
+                <ol class="ps-3 mb-0">
+                  @for (def of entry?.shortdef; track def) {
+                    <li class="mb-1 text-secondary">{{ def }}</li>
+                  }
+                </ol>
+              </div>
+            }
+          </div>
+        }
+        @else {
+          <div class="text-center py-5 text-muted">
+            <p class="small mb-0 italic">Warte auf API-Antwort...</p>
+          </div>
+        }
+
+      </div>
+    </main>
 
   </div>
 </div>
+
+<style>
+  .min-vh-50 { min-height: 50vh; }
+  .border-dashed { border: 2px dashed #ced4da !important; }
+</style>

@@ -1,0 +1,38 @@
+// Zentrales Layout für alle Such-Services
+.search-grid-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  padding: 20px;
+  align-items: start;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.search-sidebar {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid #e9ecef;
+}
+
+.search-main-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid #e9ecef;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.border-dashed {
+  border: 2px dashed #ced4da !important;
+  background-color: #fafafa;
+  text-align: center;
+  padding: 60px 20px;
+  border-radius: 8px;
+  width: 100%;
+}

@@ -1,75 +1,73 @@
-<div class="container-fluid mt-4">
-  <div class="row">
+<div style="display: grid; grid-template-columns: 300px 1fr; gap: 24px; padding: 20px; align-items: start; max-width: 1400px; margin: 0 auto;">
 
-    <!-- Linke Spalte: Sucheingabe & Historie-Sidebar -->
-    <aside class="col-md-4 col-lg-3 mb-4">
-      <div class="card p-3 shadow-sm border-0 bg-white">
+  <!-- Linke Spalte: Sidebar (Zentralisiert) -->
+  <aside style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #e9ecef;">
+    <app-form-field labelText="Wort suchen" [field]="searchFormGroup().query">
+      <input
+        [formField]="searchFormGroup().query"
+        type="text"
+        style="width: 100%; padding: 10px 12px; border: 2px solid #ced4da; border-radius: 6px; font-size: 1rem; outline: none;"
+        placeholder="Suchbegriff eingeben..." />
+    </app-form-field>
 
-        <app-form-field labelText="Wort suchen" [field]="searchFormGroup().query()">
-          <input
-            [formField]="searchFormGroup().query()"
-            type="text"
-            class="form-control py-2"
-            placeholder="Suchbegriff eingeben..." />
-        </app-form-field>
-
-        @if (history().length > 0) {
-          <div class="mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="text-uppercase text-muted small tracking-wider mb-0 fw-bold">Verlauf</h6>
-              <button (click)="clearHistory.emit()" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
-                Löschen
-              </button>
-            </div>
-
-            <div class="d-flex flex-column gap-2">
-              @for (word of history(); track word) {
-                <button
-                  (click)="selectWord.emit(word)"
-                  class="btn btn-outline-secondary border history-badge rounded-pill text-start d-flex align-items-center w-100">
-                  <span class="me-2 text-muted">⏱</span>
-                  <span class="text-truncate">{{ word }}</span>
-                </button>
-              }
-            </div>
-          </div>
-        }
-
+    @if (history().length > 0) {
+      <div style="margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h6 style="text-transform: uppercase; color: #6c757d; font-size: 0.75rem; letter-spacing: 0.05em; margin: 0; font-weight: bold;">Verlauf</h6>
+          <button (click)="clearHistory.emit()" style="background: none; border: none; color: #dc3545; padding: 0; font-size: 0.85rem; cursor: pointer;">Löschen</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          @for (word of history(); track word) {
+            <button (click)="selectWord.emit(word)" style="width: 100%; padding: 8px 16px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 50px; text-align: left; cursor: pointer; display: flex; align-items: center; font-size: 0.9rem;">
+              <span style="margin-right: 8px; color: #6c757d;">⏱</span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ word }}</span>
+            </button>
+          }
+        </div>
       </div>
-    </aside>
+    }
+  </aside>
 
-    <!-- Rechte Spalte: Ergebnisse / Lade- & Fehler-Zustände -->
-    <main class="col-md-8 col-lg-9">
-      <div class="card p-4 shadow-sm border-0 bg-white h-100 min-vh-50 d-flex flex-column">
+  <!-- Rechte Spalte: Synchron gesteuert über explizite Inputs -->
+  <main style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #e9ecef; min-height: 400px; display: flex; flex-direction: column; justify-content: center;">
 
-        @if (errorMessage()) {
-          <div class="my-auto">
-            <app-api-error
-              [errorTitle]="errorTitle()"
-              [message]="errorMessage()!"
-              (retry)="retry.emit()">
-            </app-api-error>
-          </div>
-        } @else if (isLoading()) {
-          <div class="text-center my-auto py-5">
-            <div class="spinner-border text-primary mb-3" role="status"></div>
-            <h5 class="text-muted fw-normal">Suche läuft...</h5>
-          </div>
-        } @else if (!searchInputValue()) {
-          <!-- Garantierter Startbildschirm bei leerem Suchfeld -->
-          <div class="text-center my-auto py-5 border-dashed p-4 rounded">
-            <h5 class="text-muted fw-normal">Bereit für die Suche</h5>
-            <p class="text-secondary small mb-0">Geben Sie links einen englischen Begriff ein, um Daten zu laden.</p>
-          </div>
-        } @else {
-          <!-- Sicheres Rendering des projizierten Templates -->
-          <div class="w-100">
-            <ng-container *ngTemplateOutlet="contentTemplate()"></ng-container>
-          </div>
-        }
-
+    @if (errorMessage()) {
+      <app-api-error [errorTitle]="errorTitle()" [message]="errorMessage()!" (retry)="retry.emit()"></app-api-error>
+    }
+    @else if (!searchFormGroup().query.value() || searchFormGroup().query.value().trim().length === 0) {
+      <!-- Zustand 1: Feld ist absolut leer -->
+      <div class="border-dashed" style="text-align: center; padding: 60px 20px; border-radius: 8px; width: 100%;">
+        <h5 style="color: #6c757d; font-weight: normal; margin-bottom: 8px;">Bereit für die Suche</h5>
+        <p style="color: #adb5bd; font-size: 0.875rem; margin: 0;">Geben Sie links einen englischen Begriff ein, um Daten zu laden.</p>
       </div>
-    </main>
+    }
+    @else if (isLoading()) {
+      <!-- Zustand 2: HTTP-Schnittstelle arbeitet -->
+      <div style="text-align: center; padding: 40px 0; width: 100%;">
+        <div class="spinner-loader" role="status"></div>
+        <h5 style="color: #6c757d; font-weight: normal; margin-top: 16px;">Suche läuft...</h5>
+      </div>
+    }
+    @else if (!hasData()) {
+      <!-- Zustand 3: Text eingetippt, aber Debounce läuft noch oder API lieferte keine Treffer -->
+      <div style="text-align: center; padding: 60px 20px; color: #6c757d; width: 100%;">
+        <p style="font-size: 0.95rem; margin: 0; font-style: italic;">
+          Warte auf Beendung der Eingabe (2s Debounce) oder leere Antwort für "<strong>{{ searchFormGroup().query.value() }}</strong>"...
+        </p>
+      </div>
+    }
+    @else {
+      <!-- Zustand 4: Daten sind da, reiner HTML-Durchlauf -->
+      <div style="width: 100%; text-align: left;">
+        <ng-content></ng-content>
+      </div>
+    }
 
-  </div>
+  </main>
 </div>
+
+<style>
+  .spinner-loader { display: inline-block; width: 2rem; height: 2rem; border: 0.25em solid #0d6efd; border-right-color: transparent; border-radius: 50%; animation: spinner-border .75s linear infinite; }
+  @keyframes spinner-border { to { transform: rotate(360deg); } }
+  .border-dashed { border: 2px dashed #ced4da !important; background-color: #fafafa; }
+</style>
