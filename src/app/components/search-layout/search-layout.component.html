@@ -1,0 +1,75 @@
+<div class="container-fluid mt-4">
+  <div class="row">
+
+    <!-- Linke Spalte: Sucheingabe & Historie-Sidebar -->
+    <aside class="col-md-4 col-lg-3 mb-4">
+      <div class="card p-3 shadow-sm border-0 bg-white">
+
+        <app-form-field labelText="Wort suchen" [field]="searchFormGroup().query()">
+          <input
+            [formField]="searchFormGroup().query()"
+            type="text"
+            class="form-control py-2"
+            placeholder="Suchbegriff eingeben..." />
+        </app-form-field>
+
+        @if (history().length > 0) {
+          <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="text-uppercase text-muted small tracking-wider mb-0 fw-bold">Verlauf</h6>
+              <button (click)="clearHistory.emit()" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
+                Löschen
+              </button>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+              @for (word of history(); track word) {
+                <button
+                  (click)="selectWord.emit(word)"
+                  class="btn btn-outline-secondary border history-badge rounded-pill text-start d-flex align-items-center w-100">
+                  <span class="me-2 text-muted">⏱</span>
+                  <span class="text-truncate">{{ word }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    </aside>
+
+    <!-- Rechte Spalte: Ergebnisse / Lade- & Fehler-Zustände -->
+    <main class="col-md-8 col-lg-9">
+      <div class="card p-4 shadow-sm border-0 bg-white h-100 min-vh-50 d-flex flex-column">
+
+        @if (errorMessage()) {
+          <div class="my-auto">
+            <app-api-error
+              [errorTitle]="errorTitle()"
+              [message]="errorMessage()!"
+              (retry)="retry.emit()">
+            </app-api-error>
+          </div>
+        } @else if (isLoading()) {
+          <div class="text-center my-auto py-5">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <h5 class="text-muted fw-normal">Suche läuft...</h5>
+          </div>
+        } @else if (!searchInputValue()) {
+          <!-- Garantierter Startbildschirm bei leerem Suchfeld -->
+          <div class="text-center my-auto py-5 border-dashed p-4 rounded">
+            <h5 class="text-muted fw-normal">Bereit für die Suche</h5>
+            <p class="text-secondary small mb-0">Geben Sie links einen englischen Begriff ein, um Daten zu laden.</p>
+          </div>
+        } @else {
+          <!-- Sicheres Rendering des projizierten Templates -->
+          <div class="w-100">
+            <ng-container *ngTemplateOutlet="contentTemplate()"></ng-container>
+          </div>
+        }
+
+      </div>
+    </main>
+
+  </div>
+</div>
