@@ -1,0 +1,63 @@
+<div class="container my-5">
+  <div class="row">
+
+    <!-- Linke Spalte: Inputs -->
+    <div class="col-md-6 mb-4">
+      <h3 class="mb-4">Eingabe (3 Formular-Arten)</h3>
+
+      <!-- 1. Reactive Forms -->
+      <div class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <label for="reactiveInput" class="form-label fw-bold text-primary">1. Reactive Form</label>
+        <input
+          type="text"
+          id="reactiveInput"
+          class="form-control"
+          [formControl]="reactiveControl"
+        />
+      </div>
+
+      <!-- 2. Template-driven Forms -->
+      <div class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <label for="templateInput" class="form-label fw-bold text-success">2. Template-driven Form</label>
+        <input
+          type="text"
+          id="templateInput"
+          class="form-control"
+          [(ngModel)]="templateValue"
+        />
+      </div>
+
+      <!-- 3. Angular v22 Signal Forms -->
+      <div class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <label for="signalInput" class="form-label fw-bold text-info">3. Signal Form (v22)</label>
+        <input
+          type="text"
+          id="signalInput"
+          class="form-control"
+          [formField]="signalForm.textValue"
+        />
+      </div>
+    </div>
+
+    <!-- Rechte Spalte: Live-Ausgabe -->
+    <div class="col-md-6">
+      <h3 class="mb-4">Live-Ausgabe (Array)</h3>
+
+      @for (item of inputValuesArray(); track item.type) {
+        <div class="card mb-3 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-muted small text-uppercase">{{ item.type }}</h5>
+            <p class="card-text fs-5 fw-semibold">
+              @if (item.value) {
+                {{ item.value }}
+              } @else {
+                <span class="text-danger fst-italic">Keine Eingabe...</span>
+              }
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>
