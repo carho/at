@@ -8,6 +8,7 @@
   (selectWord)="selectWord($event)"
   (clearHistory)="clearHistory()"
   (retry)="retrySearch()">
+  @if (thesaurusResource.hasValue() && !thesaurusResource.error()) {
 
   <!-- Synonym-spezifische Ausgabe für die RECHTE Spalte -->
   @let entries = thesaurusResource.value();
@@ -33,6 +34,7 @@
     </div>
   } @empty {
     <div class="alert alert-info">Keine Synonyme für dieses Wort gefunden.</div>
+  }
   }
 
 </app-search-layout>

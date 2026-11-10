@@ -24,7 +24,25 @@ export abstract class BaseSearchDirective {
   errorMessage = computed(() => {
     const error = this.getResourceError();
     if (!error) return null;
-    return (error as any)?.message || 'Ein Fehler ist aufgetreten.';
+
+    const errObj = error as any;
+
+    // 1. Fall: Keine Internetverbindung / Netzwerkfehler (Status 0)
+    if (
+      errObj.status === 0 ||
+      errObj.message?.includes('status: 0') ||
+      errObj.name === 'TimeoutError'
+    ) {
+      return 'Keine Internetverbindung. Bitte überprüfe dein Netzwerk und versuche es erneut.';
+    }
+
+    // 2. Fall: API-Key falsch / Server liefert Text statt JSON (Parsing-Fehler)
+    if (errObj.name === 'HttpErrorResponse' && errObj.message?.includes('parsing')) {
+      return 'Ungültiger API-Key oder unerwartetes Format der Server-Antwort.';
+    }
+
+    // Allgemeiner Fallback
+    return errObj?.error?.message || errObj?.message || 'Ein unerwarteter Fehler ist aufgetreten.';
   });
 
   constructor() {

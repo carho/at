@@ -10,7 +10,8 @@
   (retry)="retrySearch()">
 
   <!-- Reines inhaltsbasiertes HTML für die RECHTE Seite (per @for) -->
-  @let entries = dictionaryResource.value();
+  @if (dictionaryResource.hasValue() && !dictionaryResource.error()) {
+    @let entries = dictionaryResource.value();
   @for (entry of entries; track entry?.meta?.uuid ?? $index) {
     <div class="card mb-3 shadow-sm">
       <div class="card-body">
@@ -28,6 +29,6 @@
     </div>
   } @empty {
     <div class="alert alert-info">Keine Definitionen für dieses Wort gefunden.</div>
-  }
+  }}
 
 </app-search-layout>

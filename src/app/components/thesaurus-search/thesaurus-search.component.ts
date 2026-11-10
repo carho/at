@@ -30,7 +30,7 @@ export class ThesaurusSearchComponent extends BaseSearchDirective {
     return this.thesaurusResource.isLoading();
   }
   override hasData(): boolean {
-    return this.thesaurusResource.hasValue();
+    return this.thesaurusResource.hasValue()&& !this.thesaurusResource.error();
   }
   override retrySearch(): void {
     this.thesaurusResource.reload();

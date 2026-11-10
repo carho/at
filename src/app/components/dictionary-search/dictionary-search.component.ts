@@ -29,7 +29,7 @@ export class DictionarySearchComponent extends BaseSearchDirective {
     return this.dictionaryResource.isLoading();
   }
   override hasData(): boolean {
-    return this.dictionaryResource.hasValue();
+    return this.dictionaryResource.hasValue() && !this.dictionaryResource.error();
   }
   override retrySearch(): void {
     this.dictionaryResource.reload();

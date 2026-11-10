@@ -26,7 +26,7 @@ export const dictionaryConfig: MerriamWebsterConfig = {
   },
   thesaurus: {
     baseUrl: 'https://dictionaryapi.com/api/v3/references/thesaurus/json',
-    apiKey: 'b0d80d8f-0bba-4fb5-b582-9b27fe65ace2', // Hier den Thesaurus-Key eintragen
+    apiKey: 'b0d80d8f-0bba-4fb5-b582-9b27fe65ace2x', // Hier den Thesaurus-Key eintragen
   },
 };
 
