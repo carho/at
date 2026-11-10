@@ -1,0 +1,62 @@
+
+<div class="container my-5">
+
+  <!-- Zentrierte Überschrift über beide Spalten -->
+  <div class="row mb-5">
+    <div class="col-12 text-center">
+      <h1 class="display-5 fw-bold text-dark border-bottom pb-3">Ausgelagertes Layout (Test 2)</h1>
+    </div>
+  </div>
+
+  <div class="row">
+
+    <!-- Linke Spalte: Eingaben -->
+    <div class="col-md-6 mb-4">
+      <h3 class="mb-4 text-secondary">Eingabe</h3>
+
+      <!-- 1. Reactive Forms -->
+      <div class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <label class="form-label fw-bold text-primary">1. Reactive Form</label>
+        <input type="text" class="form-control" [formControl]="reactiveControl()" />
+      </div>
+
+      <!-- 2. Template-driven Forms -->
+      <div class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <label class="form-label fw-bold text-success">2. Template-driven Form</label>
+        <input
+          type="text"
+          class="form-control"
+          [ngModel]="templateValue()"
+          (ngModelChange)="templateValueChange.emit($event)"
+        />
+      </div>
+
+      <!-- 3. Angular v22 Signal Forms -->
+      <div class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <label class="form-label fw-bold text-info">3. Signal Form (v22)</label>
+        <input type="text" class="form-control" [formField]="signalFormField()" />
+      </div>
+    </div>
+
+    <!-- Rechte Spalte: Live-Ausgabe zwingend über @for Schleife -->
+    <div class="col-md-6">
+      <h3 class="mb-4 text-secondary">Live-Ausgabe (Array-basiert)</h3>
+
+      @for (item of displayArray(); track item.type) {
+        <div class="card mb-3 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-muted small text-uppercase fw-bold">{{ item.type }}</h5>
+            <p class="card-text fs-5 fw-semibold">
+              @if (item.value) {
+                {{ item.value }}
+              } @else {
+                <span class="text-danger fst-italic">Keine Eingabe...</span>
+              }
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>
