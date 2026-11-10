@@ -1,81 +1,75 @@
-<div class="container-fluid my-4">
-  <div class="row g-4">
-    <!-- Linke Spalte: Suche & Verlauf -->
-    <div class="col-12 col-md-4">
-      <div class="card shadow-sm border-2 mb-4 position-sticky" style="top: 1rem;">
-        <div class="card-header bg-primary text-white py-3">
-          <h5 class="card-title mb-0 d-flex align-items-center">
-            <i class="bi bi-search me-2"></i> Wort suchen
-          </h5>
-        </div>
-        <div class="card-body">
-          <!-- Suchfeld-Injektion -->
-          <div class="mb-3">
-            <ng-content select="[search-input]"></ng-content>
-          </div>
+<div class="container my-5">
 
-          <!-- Verlauf (History) -->
-          @if (history().length > 0) {
-            <div class="mt-4 pt-3 border-top">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="text-muted mb-0 d-flex align-items-center">
-                  <i class="bi bi-clock-history me-1"></i> Verlauf
-                </h6>
-                <button (click)="clearHistory.emit()" class="btn btn-sm btn-outline-danger border-0 px-2 py-0">
-                  Löschen
-                </button>
-              </div>
-              <div class="list-group list-group-flush">
-                @for (word of history(); track word) {
-                  <button
-                    (click)="selectWord.emit(word)"
-                    class="list-group-item list-group-item-action border-0 px-2 py-1.5 rounded d-flex align-items-center text-secondary"
-                  >
-                    <span class="me-2 text-muted">⏱</span> {{ word }}
-                  </button>
-                }
-              </div>
-            </div>
-          }
-        </div>
+  <div class="row mb-5">
+    <div class="col-12 text-center">
+      <h1 class="display-5 fw-bold text-dark border-bottom pb-3">Englisch-Wörterbuch & Suche</h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Links: Eingabe & Verlauf -->
+    <div class="col-md-6 mb-4">
+      <h3 class="mb-4 text-secondary">Wort suchen</h3>
+
+      <div class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <label for="searchInput" class="form-label fw-bold text-primary">Suchbegriff</label>
+        <input
+          type="text"
+          id="searchInput"
+          class="form-control"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQueryChange.emit($event)"
+          placeholder="Z. B. 'hello'..."
+        />
       </div>
 
+      @if (history().length > 0) {
+        <div class="mt-4 p-3 border rounded bg-white shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="text-muted mb-0">Verlauf</h6>
+            <button class="btn btn-sm btn-outline-danger py-0" (click)="clearHistory.emit()">Löschen</button>
+          </div>
+          <div class="list-group list-group-flush">
+            @for (word of history(); track word) {
+              <button
+                type="button"
+                class="list-group-item list-group-item-action text-start border-0 py-2 ps-1"
+                (click)="selectWord.emit(word)">
+                ⏱ {{ word }}
+              </button>
+            }
+          </div>
+        </div>
+      }
     </div>
 
-    <!-- Rechte Spalte: Ergebnisse -->
-    <div class="col-12 col-md-8">
+    <!-- Rechts: Status & Daten -->
+    <div class="col-md-6">
+      <h3 class="mb-4 text-secondary">Live-Ausgabe</h3>
+
+      <!-- FIX: errorMessage via @let sichern um string | null auf string aufzulösen -->
+      <!-- FIX: Verwende [errorTitle] statt [title] und hänge dich an das richtige (retry) Event -->
       @if (errorMessage(); as msg) {
         <app-api-error
           [errorTitle]="errorTitle()"
           [message]="msg"
           (retry)="retry.emit()">
         </app-api-error>
-      } @else if (!hasInputValue()) {
-        <!-- Status: Bereit für die Suche -->
-        <div class="card text-center p-5 border-dashed text-muted shadow-sm">
-          <div class="card-body py-5">
-            <i class="bi bi-chat-left-text display-3 text-secondary mb-3"></i>
-            <h5 class="card-title text-dark">Bereit für die Suche</h5>
-            <p class="card-text small">Geben Sie links einen englischen Begriff ein, um Daten zu laden.</p>
-          </div>
+      } @else if (!hasInputValue) {
+        <div class="p-5 border-dashed text-center">
+          <h5 class="text-muted mb-2">Bereit für die Suche</h5>
+          <p class="text-secondary small mb-0">Geben Sie links einen englischen Begriff ein, um Daten zu laden.</p>
         </div>
       } @else if (isLoading()) {
-        <!-- Status: Suche läuft -->
-        <div class="card text-center p-5 border-2 shadow-sm">
-          <div class="card-body py-5">
-            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-              <span class="visually-hidden">Laden...</span>
-            </div>
-            <h5 class="card-title text-primary">Suche läuft...</h5>
-            @if (!hasData()) {
-              <p class="card-text text-muted small">Warte auf Beendung der Eingabe (Debounce) ...</p>
-            }
-          </div>
+        <div class="text-center p-5">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <h5>Suche läuft...</h5>
         </div>
+      } @else if (hasData()) {
+        <ng-content></ng-content>
       } @else {
-        <!-- Ergebniss-Injektion -->
-        <div class="d-flex flex-column gap-3">
-          <ng-content select="[search-results]"></ng-content>
+        <div class="text-center p-5 text-muted">
+          Warte auf API-Antwort...
         </div>
       }
     </div>

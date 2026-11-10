@@ -1,55 +1,33 @@
 <app-search-layout
-  [searchFormGroup]="{ value: searchQuery }"
+  [searchQuery]="searchQuery()"
+  (searchQueryChange)="searchQuery.set($event)"
   [history]="searchHistory()"
   [isLoading]="isLoading()"
   [hasData]="hasData()"
   [errorMessage]="errorMessage()"
   (selectWord)="selectWord($event)"
   (clearHistory)="clearHistory()"
-  (retry)="retrySearch()"
->
-  <!-- Suchfeld links -->
-  <input
-    search-input
-    type="text"
-    class="form-control form-control-lg border-primary border-2 shadow-sm"
-    placeholder="Englischen Begriff eingeben..."
-    [(ngModel)]="searchQuery"
-  />
+  (retry)="retrySearch()">
 
-  <!-- KORREKTUR: Dieses Element bündelt jetzt die CSS-Klassen direkt an der Schnittstelle -->
-  <div search-results class="d-flex flex-column gap-3 w-100">
-    @let entries = dictionaryResource.value();
-
-    @for (entry of entries; track entry?.meta?.uuid ?? $index) {
-      <!-- Rahmen direkt per Inline-Style erzwingen, um Kapselungs-Fehler auszuschließen -->
-      <div class="card bg-white shadow-sm" style="border: 2px solid #86b7fe !important; border-radius: 8px; display: block; width: 100%;">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-baseline border-bottom pb-2 mb-3">
-            <h4 class="card-title text-primary fw-bold mb-0">
-              {{ entry?.meta?.id || 'Unbekannt' }}
-            </h4>
-            @if (entry?.fl) {
-              <span class="badge bg-secondary-subtle text-secondary px-2 py-1 rounded">
-                {{ entry.fl }}
-              </span>
-            }
-          </div>
-
-          <h6 class="text-uppercase text-muted fw-bold small mb-2">Definitionen:</h6>
-          <ol class="list-group list-group-numbered list-group-flush">
-            @for (def of entry?.shortdef; track def) {
-              <li class="list-group-item bg-transparent border-0 px-0 py-2 text-dark" style="border-bottom: 1px solid #f0f0f0 !important;">
-                {{ def }}
-              </li>
-            }
-          </ol>
-        </div>
+  <!-- Reines inhaltsbasiertes HTML für die RECHTE Seite (per @for) -->
+  @let entries = dictionaryResource.value();
+  @for (entry of entries; track entry?.meta?.uuid ?? $index) {
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title text-primary">{{ entry?.meta?.id || 'Unbekannt' }}</h4>
+        @if (entry?.fl) {
+          <span class="badge bg-secondary mb-3">{{ entry.fl }}</span>
+        }
+        <h6>Definitionen:</h6>
+        <ol class="list-group list-group-numbered list-group-flush">
+          @for (def of entry?.shortdef; track def) {
+            <li class="list-group-item">{{ def }}</li>
+          }
+        </ol>
       </div>
-    } @empty {
-      <div class="alert alert-info border border-info-subtle shadow-sm" role="alert">
-        Keine Definitionen für dieses Wort gefunden.
-      </div>
-    }
-  </div>
+    </div>
+  } @empty {
+    <div class="alert alert-info">Keine Definitionen für dieses Wort gefunden.</div>
+  }
+
 </app-search-layout>

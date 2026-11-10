@@ -1,64 +1,38 @@
 <app-search-layout
-  [searchFormGroup]="{ value: searchQuery }"
+  [searchQuery]="searchQuery()"
+  (searchQueryChange)="searchQuery.set($event)"
   [history]="searchHistory()"
   [isLoading]="isLoading()"
   [hasData]="hasData()"
   [errorMessage]="errorMessage()"
-  errorTitle="Thesaurus Fehler"
   (selectWord)="selectWord($event)"
   (clearHistory)="clearHistory()"
-  (retry)="retrySearch()"
->
-  <!-- Suchfeld links platzieren -->
-  <div search-input>
-    <input
-      type="text"
-      class="form-control form-control-lg border-2"
-      placeholder="Synonyme finden für..."
-      [(ngModel)]="searchQuery"
-    />
-  </div>
+  (retry)="retrySearch()">
 
-  <!-- Ergebnisse rechts platzieren -->
-  <div search-results>
-    @let entries = thesaurusResource.value();
+  <!-- Synonym-spezifische Ausgabe für die RECHTE Spalte -->
+  @let entries = thesaurusResource.value();
+  @for (entry of entries; track entry?.meta?.uuid ?? $index) {
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title text-success">{{ entry?.meta?.id || 'Unbekannt' }}</h4>
+        @if (entry?.fl) {
+          <span class="badge bg-secondary mb-3">{{ entry.fl }}</span>
+        }
 
-    @for (entry of entries; track entry?.meta?.uuid ?? $index) {
-      <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-baseline border-bottom pb-2 mb-3">
-            <h4 class="card-title text-success fw-bold mb-0">
-              {{ entry?.meta?.id || 'Unbekannt' }}
-            </h4>
-            @if (entry?.fl) {
-              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill">
-                {{ entry.fl }}
-              </span>
-            }
-          </div>
-
-          @if (entry.meta?.syns?.length) {
-            <h6 class="text-uppercase tracking-wider text-muted fw-bold small mb-2">Synonyme:</h6>
-
-            @for (synGroup of entry.meta.syns; track synGroup) {
-              <div class="d-flex flex-wrap gap-2 mb-3">
-                @for (syn of synGroup; track syn) {
-                  <button
-                    (click)="selectWord(syn)"
-                    class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-medium"
-                  >
-                    {{ syn }}
-                  </button>
-                }
-              </div>
-            }
+        @if (entry.meta?.syns?.length) {
+          <h6>Synonyme:</h6>
+          @for (synGroup of entry.meta.syns; track synGroup) {
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              @for (syn of synGroup; track syn) {
+                <span class="badge bg-light text-dark border">{{ syn }}</span>
+              }
+            </div>
           }
-        </div>
+        }
       </div>
-    } @empty {
-      <div class="alert alert-info border-0 shadow-sm" role="alert">
-        Keine Synonyme für dieses Wort gefunden.
-      </div>
-    }
-  </div>
+    </div>
+  } @empty {
+    <div class="alert alert-info">Keine Synonyme für dieses Wort gefunden.</div>
+  }
+
 </app-search-layout>
