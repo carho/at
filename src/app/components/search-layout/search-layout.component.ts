@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiErrorComponent } from '../api-error/api-error.component';
+import { BaseSearchEntry } from '../../models/search.models'; // Pfad anpassen
 
 @Component({
   selector: 'app-search-layout',

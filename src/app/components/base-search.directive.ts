@@ -1,27 +1,20 @@
-import { Directive, signal, computed, effect } from '@angular/core';
+import { Directive, signal, computed, effect, debounced } from '@angular/core'; // HIER KORRIGIERT
 
 @Directive()
 export abstract class BaseSearchDirective {
   readonly Array = Array;
 
-  // Das pure, unkomplizierte Suchsignal
+  // Das pure Eingabe-Signal
   searchQuery = signal<string>('');
   searchHistory = signal<string[]>([]);
 
-  // Simuliert den Debounce: Reagiert erst, wenn der Text stabil ist
-  private debouncedQuery = signal<string>('');
-  private timeoutId: any;
+  // Völlig speichersicherer, nativer Angular v22 Debounce direkt aus @angular/core
+  // debounced() nimmt das Quell-Signal und die Zeitspanne in ms entgegen
+  private debouncedResource = debounced(this.searchQuery, 2000);
 
-  // Dieses Signal füttert direkt die API-Resource
-  searchSignal = computed(() => {
-    const text = this.searchQuery();
-    // Setzt den Debounce-Timeout (z.B. 500ms für besseres Suchgefühl als 2s)
-    clearTimeout(this.timeoutId);
-    this.timeoutId = setTimeout(() => {
-      this.debouncedQuery.set(text);
-    }, 500);
-    return this.debouncedQuery();
-  });
+  // Da debounced() ein Signal-Äquivalent mit .value() liefert, mappen wir es hier
+  // für die Abwärtskompatibilität deiner Resource-Aufrufe
+  searchSignal = computed(() => this.debouncedResource.value() || '');
 
   abstract getResourceError(): unknown;
   abstract isLoading(): boolean;
