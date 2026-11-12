@@ -7,7 +7,7 @@ import { routes } from './app/app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { importProvidersFrom } from '@angular/core';
-import { API_CONFIG, dictionaryConfig } from './app/app.config';
+import { API_CONFIG, apiConfigValues } from './app/app.config';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -15,6 +15,6 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(),
     importProvidersFrom(NgbModule),
-    { provide: API_CONFIG, useValue: dictionaryConfig },
+    { provide: API_CONFIG, useValue: apiConfigValues },
   ],
 }).catch((err) => console.error(err));

@@ -1,0 +1,36 @@
+<app-search-layout
+  [searchQuery]="searchQuery()"
+  (searchQueryChange)="searchQuery.set($event)"
+  [history]="searchHistory()"
+  [isLoading]="isLoading()"
+  [hasData]="hasData()"
+  [errorMessage]="errorMessage()"
+  (selectWord)="selectWord($event)"
+  (clearHistory)="clearHistory()"
+  (retry)="retrySearch()">
+
+  <!-- Schutz vor direktem .value() Zugriff im Fehlerfall -->
+  @if (wikiResource.hasValue() && !wikiResource.error()) {
+    @let articles = wikiResource.value();
+
+    @for (article of articles; track article.id) {
+      <div class="card mb-3 shadow-sm border-w">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="card-title text-dark mb-0">{{ article.id }}</h4>
+            <span class="badge bg-dark">{{ article.typeBadge }}</span>
+          </div>
+
+          <p class="card-text text-secondary">{{ article.description }}</p>
+
+          <a [href]="article.link" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+            📖 Artikel öffnen
+          </a>
+        </div>
+      </div>
+    } @empty {
+      <div class="alert alert-info">Keine Wikipedia-Artikel für diesen Begriff gefunden.</div>
+    }
+  }
+
+</app-search-layout>

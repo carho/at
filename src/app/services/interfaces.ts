@@ -24,3 +24,9 @@ export interface MerriamWebsterThesaurusEntry {
   fl: string;
   shortdef: string[];
 }
+export interface WikipediaEntry {
+  id: string;
+  typeBadge: string;
+  description: string;
+  link: string;
+}
